@@ -321,7 +321,7 @@ short int InverseKinematics(float BasePoints[3], int LegAng[3])
 	float temp;											// holder
 	float PI = 3.1416;
 	// stage 1, find theta 0
-	theta0 = (atan2 (BasePoints[1], BasePoints[0]));
+	theta0 = atan2(BasePoints[1], BasePoints[0]);
 	
 	// stage 2, find Ax in xz plane
 	Ax = sqrt( pow(BasePoints[0], 2) + pow(BasePoints[1], 2) );
@@ -335,7 +335,7 @@ short int InverseKinematics(float BasePoints[3], int LegAng[3])
 	temp = 1 - pow(D1,2);
 	if(temp > 0) 
 	{
-		theta2 = atan2( -sqrt(temp), D1) * 180.0 / PI;
+		theta2 = atan2( -sqrt(temp), D1);
 	}
 	else
 	{
