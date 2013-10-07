@@ -1,0 +1,15 @@
+<package>
+  <description brief="MyRobot">
+
+     MyRobot
+
+  </description>
+  <author>Cody</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/MyRobot</url>
+  <depend package="urdf"/>
+
+</package>
+
+
