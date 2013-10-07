@@ -325,6 +325,8 @@ short int InverseKinematics(float BasePoints[3], int LegAng[3])
 	
 	// stage 2, find Ax in xz plane
 	Ax = sqrt( pow(BasePoints[0], 2) + pow(BasePoints[1], 2) );
+
+	Ax = Ax - .03378;	// add offset for J1 to J2 distance
 	
 	// stage 3 find theta1 and theta2 from Az and BasePoints[2] or "Az"
 	// D1 = ( Goal.x(2)^2 + Goal.y(2)^2 - L(1).leng^2 - L(2).leng^2 ) / (2*L(1).leng*L(2).leng); // from matlab
