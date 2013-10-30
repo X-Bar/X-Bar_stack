@@ -41,7 +41,6 @@ Leg Three: channels 6, 7, 8
 
 #include "ros/ros.h"
 #include "std_msgs/Char.h"
-//#include <geometry_msgs/TwistStamped.h>
 #include <iostream>
 
 #include <stdio.h>
@@ -54,9 +53,11 @@ Leg Three: channels 6, 7, 8
 #include <math.h>
 
 #include "SpiderRobot/TransferFrame.h"
+#include "SpiderRobot/InverseK.h"
+#include "SpiderRobot/AnglesToJoints.h"
 #include <SpiderRobot/MyArray.h>
 
-void Angles2Joints(short int group, int Joints[3]);
+void Angles2Joints(short int group, int Joints[3], SpiderRobot::MyArray PosArray);
 void LegStatusCallback(const std_msgs::Char::ConstPtr& msg);
 void shutdownHandler(int s);
 short int WaitForDone(void);
@@ -73,9 +74,9 @@ int STATE = 0;
 
 int main(int argc, char **argv)
 {
-	printf("Starting SpiderRobotMain_pub \n");
+	printf("Starting SpiderRobotMain_pubsub \n");
 	
-	ros::init(argc, argv, "SpiderRobotMain");			// start ROS connection
+	ros::init(argc, argv, "SpiderRobotMain");			// start ROS connectionn
 	ros::NodeHandle nh;									// make node handle
 	// make publishing object and advertise
 	ros::Publisher SpiderRobotMain_pub = nh.advertise<SpiderRobot::MyArray>("MyArray", 100);
@@ -133,7 +134,7 @@ int main(int argc, char **argv)
 		{
 		  case 0: // start 
 		  {
-			Angles2Joints(2, LegsUpUp);					// move all leg groups upup
+			Angles2Joints(2, LegsUpUp, PosArray);		// move all leg groups upup
 			SpiderRobotMain_pub.publish(PosArray);		// publish command
 			usleep(1*1000*1000);
 			SpiderRobotMain_pub.publish(PosArray);		// publish first command twice
@@ -143,35 +144,35 @@ int main(int argc, char **argv)
 	  	  }
 		  case 1:
 		  {
-			Angles2Joints(2, LegsUp);					// move all leg groups upup
+			Angles2Joints(2, LegsUp, PosArray);			// move all leg groups upup
 			SpiderRobotMain_pub.publish(PosArray);		// publish command
 			STATE = 2;
 			break;
 		  }
 		  case 2:
 		  {
-			Angles2Joints(2, LegsDown);					// move all leg groups upup
+			Angles2Joints(2, LegsDown, PosArray);		// move all leg groups upup
 			SpiderRobotMain_pub.publish(PosArray);		// publish command
 			STATE = 3;
 			break;
 		  }
 		  case 3:
 		  {
-			Angles2Joints(1, LegsUp);					// move all leg groups upup
+			Angles2Joints(1, LegsUp, PosArray);			// move all leg groups upup
 			SpiderRobotMain_pub.publish(PosArray);		// publish command
 			STATE = 4;
 			break;
 		  }
 		  case 4:
 		  {
-			Angles2Joints(2, LegsDown);					// move all leg groups upup
+			Angles2Joints(2, LegsDown, PosArray);		// move all leg groups upup
 			SpiderRobotMain_pub.publish(PosArray);		// publish command
 			STATE = 5;
 			break;
 		  }
 		  case 5:
 		  {
-			Angles2Joints(0, LegsUp);					// move all leg groups upup
+			Angles2Joints(0, LegsUp, PosArray);			// move all leg groups upup
 			SpiderRobotMain_pub.publish(PosArray);		// publish command
 			STATE = 2;
 			break;
@@ -206,70 +207,7 @@ void shutdownHandler(int s)
 	SHUTDOWN = true;
 }
 
-/***********************************************************************************************************************
-void Angles2Joints(short int group, int Joints[3])
-Takes array of desired leg joints and places them in PosArray.data for publishing
-* int group will place the joints in the correct positions of PosArray.data for the desired leg group
-* * group 0: places angles for leg group 0
-* * group 1: places angles for leg group 1
-* * group 2: places angles for leg group 0 and 1
-***********************************************************************************************************************/
-void Angles2Joints(short int group, int Joints[3])
-{
-	switch(group)
-	{
-	 case 0: // leg group 0
-	 {
-		PosArray.data[0] = Joints[0];
-		PosArray.data[1] = Joints[1];
-		PosArray.data[2] = Joints[2];
-		PosArray.data[6] = Joints[0];
-		PosArray.data[7] = Joints[1];
-		PosArray.data[8] = Joints[2];
-		PosArray.data[12] = Joints[0];
-		PosArray.data[13] = Joints[1];
-		PosArray.data[14] = Joints[2];
-		break;
-	 }
-	 case 1: // leg group 1
-	 {
-		PosArray.data[3] = Joints[0];
-		PosArray.data[4] = Joints[1];
-		PosArray.data[5] = Joints[2];
-		PosArray.data[9] = Joints[0];
-		PosArray.data[10] = Joints[1];
-		PosArray.data[11] = Joints[2];
-		PosArray.data[15] = Joints[0];
-		PosArray.data[16] = Joints[1];
-		PosArray.data[17] = Joints[2];
-		break;
-	 } 
-	 case 2: // all legs
-	 {
-		PosArray.data[0] = Joints[0];
-		PosArray.data[1] = Joints[1];
-		PosArray.data[2] = Joints[2];
-		PosArray.data[6] = Joints[0];
-		PosArray.data[7] = Joints[1];
-		PosArray.data[8] = Joints[2];
-		PosArray.data[12] = Joints[0];
-		PosArray.data[13] = Joints[1];
-		PosArray.data[14] = Joints[2];
 
-		PosArray.data[3] = Joints[0];
-		PosArray.data[4] = Joints[1];
-		PosArray.data[5] = Joints[2];
-		PosArray.data[9] = Joints[0];
-		PosArray.data[10] = Joints[1];
-		PosArray.data[11] = Joints[2];
-		PosArray.data[15] = Joints[0];
-		PosArray.data[16] = Joints[1];
-		PosArray.data[17] = Joints[2];
-		break;
-	 }// end case 2
-	}// end switch
-	
-}// end Angles2Joints()
 
 void LegStatusCallback(const std_msgs::Char::ConstPtr& msg)
 {
@@ -304,58 +242,6 @@ short int WaitForDone(void)
 	return 0;
 }// end WaitForDone()
 
-/***********************************************************************************************************************
-float* InverseKinematics(float BasePoints[3])
-Takes array of leg end effector position in leg frame, transfers it into jointspace and returns
-* output float LegAng[3]
-* returns int = 0 if successful
-***********************************************************************************************************************/
-short int InverseKinematics(float BasePoints[3], int LegAng[3])
-{
-	// inverse k should be leg independent and not need modes
-	// based on law of cosines
-	// need to find theta0, theta1, and theta2
-	float theta0, theta1, theta2;
-	float D1;										// for inverse k
-	float Ax;											// x and z points in xz plane
-	float temp;											// holder
-	float PI = 3.1416;
-	// stage 1, find theta 0
-	theta0 = atan2(BasePoints[1], BasePoints[0]);
-	
-	// stage 2, find Ax in xz plane
-	Ax = sqrt( pow(BasePoints[0], 2) + pow(BasePoints[1], 2) );
 
-	Ax = Ax - .03378;	// add offset for J1 to J2 distance
-	
-	// stage 3 find theta1 and theta2 from Az and BasePoints[2] or "Az"
-	// D1 = ( Goal.x(2)^2 + Goal.y(2)^2 - L(1).leng^2 - L(2).leng^2 ) / (2*L(1).leng*L(2).leng); // from matlab
-	D1 = pow(Ax, 2) + pow(BasePoints[2], 2) - pow(0.05715, 2) - pow(0.127, 2);
-	D1 = D1 / (2.0*0.05715*0.127);
-	
-	// L(2).angdes =  atan2( real(-sqrt(1-D1^2)),D1 );
-	temp = 1 - pow(D1,2);
-	if(temp > 0) 
-	{
-		theta2 = atan2( -sqrt(temp), D1);
-	}
-	else
-	{
-		ROS_ERROR("Bad value (1 - pow(D1,2) > 0) = false:: %f\n", temp);
-		ROS_INFO("Theta0: %f, Ax: %f, D1: %f, temp: %f\n", theta0, Ax, D1, temp);
-		ROS_INFO("BasePoints: %f, %f, %f\n", BasePoints[0], BasePoints[1], BasePoints[2]);
-		return 1;
-	}
-	
-	// L(1).angdes =  atan2(Goal.y(2),Goal.x(2)) - atan2(L(2).leng*sin(L(2).angdes), L(1).leng + L(2).leng*cos(L(2).angdes))
-	theta1 = atan2(BasePoints[2], Ax) - atan2(0.127*sin(theta2), 0.05715 + 0.127*cos(theta2));
-	printf("Leg angles: %f, %f, %f\n", theta0*180.0/PI, theta1*180.0/PI, theta2*180.0/PI);
-	
-	LegAng[0] = (int)(theta0*180.0/PI);
-	LegAng[1] = (int)(theta1*180.0/PI);
-	LegAng[2] = (int)(theta2*180.0/PI);
-	
-	return 0;
-}
 
 
