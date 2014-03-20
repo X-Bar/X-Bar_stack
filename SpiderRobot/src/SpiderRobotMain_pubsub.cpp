@@ -57,7 +57,7 @@ Leg Three: channels 6, 7, 8
 #include "SpiderRobot/AnglesToJoints.h"
 #include <SpiderRobot/MyArray.h>
 
-void Angles2Joints(short int group, int Joints[3], SpiderRobot::MyArray PosArray);
+SpiderRobot::MyArray Angles2Joints(short int group, int Joints[3], SpiderRobot::MyArray PosArray);
 void LegStatusCallback(const std_msgs::Char::ConstPtr& msg);
 void shutdownHandler(int s);
 short int WaitForDone(void);
@@ -66,9 +66,9 @@ void MultiplyMat(float A[4][4], float B[4][1], float C[4][1]);//,int N, int L, i
 short int InverseKinematics(float BasePoints[3], int LegAng[3]);
 
 
-bool SHUTDOWN = false;									// flag to shutdown while loop
-SpiderRobot::MyArray PosArray;							// ROS message to publish
-bool CurrentlyMoving = true;							// flag of whether serial controller returns that its currenly moving
+bool SHUTDOWN = false;											// flag to shutdown while loop
+SpiderRobot::MyArray PosArray;									// ROS message to publish
+bool CurrentlyMoving = true;									// flag of whether serial controller returns that its currenly moving
 int STATE = 0;
 
 
@@ -76,21 +76,21 @@ int main(int argc, char **argv)
 {
 	printf("Starting SpiderRobotMain_pubsub \n");
 	
-	ros::init(argc, argv, "SpiderRobotMain");			// start ROS connectionn
-	ros::NodeHandle nh;									// make node handle
+	ros::init(argc, argv, "SpiderRobotMain");					// start ROS connectionn
+	ros::NodeHandle nh;											// make node handle
 	// make publishing object and advertise
 	ros::Publisher SpiderRobotMain_pub = nh.advertise<SpiderRobot::MyArray>("MyArray", 100);
 	// make subscribing object for feedback
 	ros::Subscriber LegStatus_sub = nh.subscribe("LegStatus", 1, LegStatusCallback);
 
-	int i = 0;											// counter
-	short int MySpeed = 300;							// speed for joints to move
+	int i = 0;													// counter
+	short int MySpeed = 300;									// speed for joints to move
 	
 	int* LegArray;
-	PosArray.command = 0;								// command number. 0 is move all legs
-	PosArray.speed = 300;								// speed for joints to move
-	PosArray.size = 18;									// size of data array
-	ros::Rate loop_rate(.2);							// while loop rate
+	PosArray.command = 0;										// command number. 0 is move all legs
+	PosArray.speed = 300;										// speed for joints to move
+	PosArray.size = 18;											// size of data array
+	ros::Rate loop_rate(.2);									// while loop rate
 	
 	// number of general positions, old version
 	//  side/leg/joint  CurrentlyMoving   L/1/1      L/1/3   L/2/2      L/3/1     L/3/3     R/1/2     R/2/1     R/2/3     R/3/2                      
@@ -105,13 +105,13 @@ int main(int argc, char **argv)
 
 	// number of general positions, new version. Use with function Angles to Joints
 	//			J0  J1  J2
-	int LegsUpUp[] =	{0, 63, -80};					// position for leg group all straight up
-	int LegsHome[] =	{0, 0, 0};						// leg all at zero
-	int LegsDown[] =	{0, -30, -35};					// legs in a standing down position
-	int LegsUp[] =		{0, 27, 25};					// legs in a lefted position
+	int LegsUpUp[] =	{0, 63, -80};							// position for leg group all straight up
+	int LegsHome[] =	{0, 0, 0};								// leg all at zero
+	int LegsDown[] =	{0, -30, -35};							// legs in a standing down position
+	int LegsUp[] =		{0, 27, 25};							// legs in a lefted position
 
 	printf("Starting system loop..\n");
-	STATE = 0; 											// set state to start
+	STATE = 0; 													// set state to start
 	
 	/////////////
 	
@@ -134,46 +134,52 @@ int main(int argc, char **argv)
 		{
 		  case 0: // start 
 		  {
-			Angles2Joints(2, LegsUpUp, PosArray);		// move all leg groups upup
-			SpiderRobotMain_pub.publish(PosArray);		// publish command
+			PosArray = Angles2Joints(2, LegsUpUp, PosArray);	// move all leg groups
+			SpiderRobotMain_pub.publish(PosArray);				// publish command
 			usleep(1*1000*1000);
-			SpiderRobotMain_pub.publish(PosArray);		// publish first command twice
+			SpiderRobotMain_pub.publish(PosArray);				// publish first command twice
+			CurrentlyMoving = true;								// change status to moving as command was given
 			usleep(1*1000*1000);
 			STATE = 1;
 			break;
 	  	  }
 		  case 1:
 		  {
-			Angles2Joints(2, LegsUp, PosArray);			// move all leg groups upup
-			SpiderRobotMain_pub.publish(PosArray);		// publish command
+			PosArray = Angles2Joints(2, LegsUp, PosArray);		// move all leg groups
+			SpiderRobotMain_pub.publish(PosArray);				// publish command
+			CurrentlyMoving = true;
 			STATE = 2;
 			break;
 		  }
 		  case 2:
 		  {
-			Angles2Joints(2, LegsDown, PosArray);		// move all leg groups upup
-			SpiderRobotMain_pub.publish(PosArray);		// publish command
+			PosArray = Angles2Joints(2, LegsDown, PosArray);	// move all leg groups
+			SpiderRobotMain_pub.publish(PosArray);				// publish command
+			CurrentlyMoving = true;
 			STATE = 3;
 			break;
 		  }
 		  case 3:
 		  {
-			Angles2Joints(1, LegsUp, PosArray);			// move all leg groups upup
-			SpiderRobotMain_pub.publish(PosArray);		// publish command
+			PosArray = Angles2Joints(1, LegsUp, PosArray);		// move all leg groups
+			SpiderRobotMain_pub.publish(PosArray);				// publish command
+			CurrentlyMoving = true;
 			STATE = 4;
 			break;
 		  }
 		  case 4:
 		  {
-			Angles2Joints(2, LegsDown, PosArray);		// move all leg groups upup
-			SpiderRobotMain_pub.publish(PosArray);		// publish command
+			PosArray = Angles2Joints(2, LegsDown, PosArray);	// move all leg groups
+			SpiderRobotMain_pub.publish(PosArray);				// publish command
+			CurrentlyMoving = true;
 			STATE = 5;
 			break;
 		  }
 		  case 5:
 		  {
-			Angles2Joints(0, LegsUp, PosArray);			// move all leg groups upup
-			SpiderRobotMain_pub.publish(PosArray);		// publish command
+			PosArray = Angles2Joints(0, LegsUp, PosArray);		// move all leg groups
+			SpiderRobotMain_pub.publish(PosArray);				// publish command
+			CurrentlyMoving = true;
 			STATE = 2;
 			break;
 		  }
@@ -181,16 +187,16 @@ int main(int argc, char **argv)
 
 		  default:
 		  {
-			PosArray.command = 1;						// command 1 is exit for serial controller
-			SpiderRobotMain_pub.publish(PosArray);		// publish command
-			SHUTDOWN = true;							// stop while loop
-			break; break;								// exit
+			PosArray.command = 1;								// command 1 is exit for serial controller
+			SpiderRobotMain_pub.publish(PosArray);				// publish command
+			SHUTDOWN = true;									// stop while loop
+			break; break;										// exit
 		  }
 		}// end switch(STATE)
 		usleep(1000*1000);
 		ros::spinOnce();
 		ros::spinOnce();
-		WaitForDone();									// wait for completetion
+		WaitForDone();											// wait for completetion
 	}// end while loop
 
 
@@ -236,8 +242,8 @@ short int WaitForDone(void)
 	//for(int i = 0; i < 1000; i++)
 	while(CurrentlyMoving && ros::ok() && !SHUTDOWN)
 	{
-		ros::spinOnce();								// Check for leg status msg
-		usleep(100*1000);								// wait 10th of a second
+		ros::spinOnce();										// Check for leg status msg
+		usleep(100*1000);										// wait 10th of a second
 	}
 	return 0;
 }// end WaitForDone()

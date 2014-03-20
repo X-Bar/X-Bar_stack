@@ -10,7 +10,7 @@ Takes array of desired leg joints and places them in PosArray.data for publishin
 * * group 1: places angles for leg group 1
 * * group 2: places angles for leg group 0 and 1
 ***********************************************************************************************************************/
-void Angles2Joints(short int group, int Joints[3], SpiderRobot::MyArray PosArray)
+SpiderRobot::MyArray Angles2Joints(short int group, int Joints[3], SpiderRobot::MyArray PosArray)
 {
 	switch(group)
 	{
@@ -65,4 +65,5 @@ void Angles2Joints(short int group, int Joints[3], SpiderRobot::MyArray PosArray
 	 }// end case 2
 	}// end switch
 	
+	return PosArray;
 }// end Angles2Joints()
