@@ -1,0 +1,1 @@
+/usr/bin/c++  -fPIC -O2 -g   -shared -Wl,-soname,libgtest.so -o /home/cody/groovy_workspace/GitHubRepos/X-Bar_stack/CodyLegoBot/lib/libgtest.so CMakeFiles/gtest.dir/src/gtest-all.cc.o -L/home/cody/groovy_workspace/GitHubRepos/X-Bar_stack/CodyLegoBot/build/gtest/src -lpthread -Wl,-rpath,/home/cody/groovy_workspace/GitHubRepos/X-Bar_stack/CodyLegoBot/build/gtest/src 

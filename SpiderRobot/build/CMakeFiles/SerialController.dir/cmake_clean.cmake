@@ -2,7 +2,7 @@ FILE(REMOVE_RECURSE
   "../msg_gen"
   "../msg_gen"
   "../src/SpiderRobot/msg"
-  "CMakeFiles/SerialController.dir/src/SerialController_sub.o"
+  "CMakeFiles/SerialController.dir/src/SerialController_sub.cpp.o"
   "../bin/SerialController.pdb"
   "../bin/SerialController"
 )

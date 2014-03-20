@@ -2,7 +2,7 @@ FILE(REMOVE_RECURSE
   "../msg_gen"
   "../msg_gen"
   "../src/SpiderRobot/msg"
-  "CMakeFiles/SpiderMovementController_pubsub.dir/src/SpiderMovementController_pubsub.o"
+  "CMakeFiles/SpiderMovementController_pubsub.dir/src/SpiderMovementController_pubsub.cpp.o"
   "../bin/SpiderMovementController_pubsub.pdb"
   "../bin/SpiderMovementController_pubsub"
 )
