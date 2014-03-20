@@ -1,10 +1,11 @@
 FILE(REMOVE_RECURSE
   "../msg_gen"
+  "../msg_gen"
   "../src/SpiderRobot/msg"
   "CMakeFiles/ROSBUILD_genmsg_py"
   "../src/SpiderRobot/msg/__init__.py"
-  "../src/SpiderRobot/msg/_MyChar.py"
   "../src/SpiderRobot/msg/_My2Num.py"
+  "../src/SpiderRobot/msg/_MyChar.py"
   "../src/SpiderRobot/msg/_MyArray.py"
 )
 

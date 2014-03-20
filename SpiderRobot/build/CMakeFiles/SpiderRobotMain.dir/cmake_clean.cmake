@@ -1,7 +1,8 @@
 FILE(REMOVE_RECURSE
   "../msg_gen"
+  "../msg_gen"
   "../src/SpiderRobot/msg"
-  "CMakeFiles/SpiderRobotMain.dir/src/SpiderRobotMain_pubsub.cpp.o"
+  "CMakeFiles/SpiderRobotMain.dir/src/SpiderRobotMain_pubsub.o"
   "../bin/SpiderRobotMain.pdb"
   "../bin/SpiderRobotMain"
 )

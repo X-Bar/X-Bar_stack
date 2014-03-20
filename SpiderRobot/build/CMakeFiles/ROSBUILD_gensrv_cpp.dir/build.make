@@ -31,14 +31,11 @@ CMAKE_COMMAND = /usr/bin/cmake
 # The command to remove a file.
 RM = /usr/bin/cmake -E remove -f
 
-# Escaping for special characters.
-EQUALS = =
-
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/pi/groovy_workspace/GitHubRepos/X-Bar_stack/SpiderRobot
+CMAKE_SOURCE_DIR = /home/cody/fuerte_workspace/GitHubRepos/X-Bar_stack/SpiderRobot
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/pi/groovy_workspace/GitHubRepos/X-Bar_stack/SpiderRobot/build
+CMAKE_BINARY_DIR = /home/cody/fuerte_workspace/GitHubRepos/X-Bar_stack/SpiderRobot/build
 
 # Utility rule file for ROSBUILD_gensrv_cpp.
 
@@ -60,6 +57,6 @@ CMakeFiles/ROSBUILD_gensrv_cpp.dir/clean:
 .PHONY : CMakeFiles/ROSBUILD_gensrv_cpp.dir/clean
 
 CMakeFiles/ROSBUILD_gensrv_cpp.dir/depend:
-	cd /home/pi/groovy_workspace/GitHubRepos/X-Bar_stack/SpiderRobot/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/pi/groovy_workspace/GitHubRepos/X-Bar_stack/SpiderRobot /home/pi/groovy_workspace/GitHubRepos/X-Bar_stack/SpiderRobot /home/pi/groovy_workspace/GitHubRepos/X-Bar_stack/SpiderRobot/build /home/pi/groovy_workspace/GitHubRepos/X-Bar_stack/SpiderRobot/build /home/pi/groovy_workspace/GitHubRepos/X-Bar_stack/SpiderRobot/build/CMakeFiles/ROSBUILD_gensrv_cpp.dir/DependInfo.cmake --color=$(COLOR)
+	cd /home/cody/fuerte_workspace/GitHubRepos/X-Bar_stack/SpiderRobot/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/cody/fuerte_workspace/GitHubRepos/X-Bar_stack/SpiderRobot /home/cody/fuerte_workspace/GitHubRepos/X-Bar_stack/SpiderRobot /home/cody/fuerte_workspace/GitHubRepos/X-Bar_stack/SpiderRobot/build /home/cody/fuerte_workspace/GitHubRepos/X-Bar_stack/SpiderRobot/build /home/cody/fuerte_workspace/GitHubRepos/X-Bar_stack/SpiderRobot/build/CMakeFiles/ROSBUILD_gensrv_cpp.dir/DependInfo.cmake --color=$(COLOR)
 .PHONY : CMakeFiles/ROSBUILD_gensrv_cpp.dir/depend
 

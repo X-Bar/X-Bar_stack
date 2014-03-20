@@ -35,14 +35,11 @@ CMAKE_COMMAND = /usr/bin/cmake
 # The command to remove a file.
 RM = /usr/bin/cmake -E remove -f
 
-# Escaping for special characters.
-EQUALS = =
-
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/pi/groovy_workspace/GitHubRepos/X-Bar_stack/SpiderRobot
+CMAKE_SOURCE_DIR = /home/cody/fuerte_workspace/GitHubRepos/X-Bar_stack/SpiderRobot
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/pi/groovy_workspace/GitHubRepos/X-Bar_stack/SpiderRobot/build
+CMAKE_BINARY_DIR = /home/cody/fuerte_workspace/GitHubRepos/X-Bar_stack/SpiderRobot/build
 
 #=============================================================================
 # Targets provided globally by CMake.
@@ -57,47 +54,6 @@ edit_cache:
 edit_cache/fast: edit_cache
 .PHONY : edit_cache/fast
 
-# Special rule for the target install
-install: preinstall
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Install the project..."
-	/usr/bin/cmake -P cmake_install.cmake
-.PHONY : install
-
-# Special rule for the target install
-install/fast: preinstall/fast
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Install the project..."
-	/usr/bin/cmake -P cmake_install.cmake
-.PHONY : install/fast
-
-# Special rule for the target install/local
-install/local: preinstall
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Installing only the local directory..."
-	/usr/bin/cmake -DCMAKE_INSTALL_LOCAL_ONLY=1 -P cmake_install.cmake
-.PHONY : install/local
-
-# Special rule for the target install/local
-install/local/fast: install/local
-.PHONY : install/local/fast
-
-# Special rule for the target install/strip
-install/strip: preinstall
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Installing the project stripped..."
-	/usr/bin/cmake -DCMAKE_INSTALL_DO_STRIP=1 -P cmake_install.cmake
-.PHONY : install/strip
-
-# Special rule for the target install/strip
-install/strip/fast: install/strip
-.PHONY : install/strip/fast
-
-# Special rule for the target list_install_components
-list_install_components:
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Available install components are: \"Unspecified\""
-.PHONY : list_install_components
-
-# Special rule for the target list_install_components
-list_install_components/fast: list_install_components
-.PHONY : list_install_components/fast
-
 # Special rule for the target rebuild_cache
 rebuild_cache:
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Running CMake to regenerate build system..."
@@ -110,9 +66,9 @@ rebuild_cache/fast: rebuild_cache
 
 # The main all target
 all: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/pi/groovy_workspace/GitHubRepos/X-Bar_stack/SpiderRobot/build/CMakeFiles /home/pi/groovy_workspace/GitHubRepos/X-Bar_stack/SpiderRobot/build/CMakeFiles/progress.marks
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/cody/fuerte_workspace/GitHubRepos/X-Bar_stack/SpiderRobot/build/CMakeFiles /home/cody/fuerte_workspace/GitHubRepos/X-Bar_stack/SpiderRobot/build/CMakeFiles/progress.marks
 	$(MAKE) -f CMakeFiles/Makefile2 all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/pi/groovy_workspace/GitHubRepos/X-Bar_stack/SpiderRobot/build/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/cody/fuerte_workspace/GitHubRepos/X-Bar_stack/SpiderRobot/build/CMakeFiles 0
 .PHONY : all
 
 # The main clean target
@@ -153,6 +109,19 @@ ROSBUILD_genmsg_cpp/fast:
 .PHONY : ROSBUILD_genmsg_cpp/fast
 
 #=============================================================================
+# Target rules for targets named ROSBUILD_genmsg_lisp
+
+# Build rule for target.
+ROSBUILD_genmsg_lisp: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 ROSBUILD_genmsg_lisp
+.PHONY : ROSBUILD_genmsg_lisp
+
+# fast build rule for target.
+ROSBUILD_genmsg_lisp/fast:
+	$(MAKE) -f CMakeFiles/ROSBUILD_genmsg_lisp.dir/build.make CMakeFiles/ROSBUILD_genmsg_lisp.dir/build
+.PHONY : ROSBUILD_genmsg_lisp/fast
+
+#=============================================================================
 # Target rules for targets named ROSBUILD_genmsg_py
 
 # Build rule for target.
@@ -177,6 +146,19 @@ ROSBUILD_gensrv_cpp: cmake_check_build_system
 ROSBUILD_gensrv_cpp/fast:
 	$(MAKE) -f CMakeFiles/ROSBUILD_gensrv_cpp.dir/build.make CMakeFiles/ROSBUILD_gensrv_cpp.dir/build
 .PHONY : ROSBUILD_gensrv_cpp/fast
+
+#=============================================================================
+# Target rules for targets named ROSBUILD_gensrv_lisp
+
+# Build rule for target.
+ROSBUILD_gensrv_lisp: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 ROSBUILD_gensrv_lisp
+.PHONY : ROSBUILD_gensrv_lisp
+
+# fast build rule for target.
+ROSBUILD_gensrv_lisp/fast:
+	$(MAKE) -f CMakeFiles/ROSBUILD_gensrv_lisp.dir/build.make CMakeFiles/ROSBUILD_gensrv_lisp.dir/build
+.PHONY : ROSBUILD_gensrv_lisp/fast
 
 #=============================================================================
 # Target rules for targets named SerialController
@@ -218,43 +200,17 @@ SpiderRobotMain/fast:
 .PHONY : SpiderRobotMain/fast
 
 #=============================================================================
-# Target rules for targets named clean_test_results
+# Target rules for targets named clean-test-results
 
 # Build rule for target.
-clean_test_results: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 clean_test_results
-.PHONY : clean_test_results
+clean-test-results: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 clean-test-results
+.PHONY : clean-test-results
 
 # fast build rule for target.
-clean_test_results/fast:
-	$(MAKE) -f CMakeFiles/clean_test_results.dir/build.make CMakeFiles/clean_test_results.dir/build
-.PHONY : clean_test_results/fast
-
-#=============================================================================
-# Target rules for targets named doxygen
-
-# Build rule for target.
-doxygen: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 doxygen
-.PHONY : doxygen
-
-# fast build rule for target.
-doxygen/fast:
-	$(MAKE) -f CMakeFiles/doxygen.dir/build.make CMakeFiles/doxygen.dir/build
-.PHONY : doxygen/fast
-
-#=============================================================================
-# Target rules for targets named rosbuild_clean-test-results
-
-# Build rule for target.
-rosbuild_clean-test-results: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 rosbuild_clean-test-results
-.PHONY : rosbuild_clean-test-results
-
-# fast build rule for target.
-rosbuild_clean-test-results/fast:
-	$(MAKE) -f CMakeFiles/rosbuild_clean-test-results.dir/build.make CMakeFiles/rosbuild_clean-test-results.dir/build
-.PHONY : rosbuild_clean-test-results/fast
+clean-test-results/fast:
+	$(MAKE) -f CMakeFiles/clean-test-results.dir/build.make CMakeFiles/clean-test-results.dir/build
+.PHONY : clean-test-results/fast
 
 #=============================================================================
 # Target rules for targets named rosbuild_precompile
@@ -335,19 +291,6 @@ rospack_gensrv/fast:
 .PHONY : rospack_gensrv/fast
 
 #=============================================================================
-# Target rules for targets named run_tests
-
-# Build rule for target.
-run_tests: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 run_tests
-.PHONY : run_tests
-
-# fast build rule for target.
-run_tests/fast:
-	$(MAKE) -f CMakeFiles/run_tests.dir/build.make CMakeFiles/run_tests.dir/build
-.PHONY : run_tests/fast
-
-#=============================================================================
 # Target rules for targets named test
 
 # Build rule for target.
@@ -412,103 +355,50 @@ tests/fast:
 	$(MAKE) -f CMakeFiles/tests.dir/build.make CMakeFiles/tests.dir/build
 .PHONY : tests/fast
 
-#=============================================================================
-# Target rules for targets named gtest
-
-# Build rule for target.
-gtest: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 gtest
-.PHONY : gtest
-
-# fast build rule for target.
-gtest/fast:
-	$(MAKE) -f gtest/CMakeFiles/gtest.dir/build.make gtest/CMakeFiles/gtest.dir/build
-.PHONY : gtest/fast
-
-#=============================================================================
-# Target rules for targets named gtest_main
-
-# Build rule for target.
-gtest_main: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 gtest_main
-.PHONY : gtest_main
-
-# fast build rule for target.
-gtest_main/fast:
-	$(MAKE) -f gtest/CMakeFiles/gtest_main.dir/build.make gtest/CMakeFiles/gtest_main.dir/build
-.PHONY : gtest_main/fast
-
-src/SerialController_sub.o: src/SerialController_sub.cpp.o
+# target to build an object file
+src/SerialController_sub.o:
+	$(MAKE) -f CMakeFiles/SerialController.dir/build.make CMakeFiles/SerialController.dir/src/SerialController_sub.o
 .PHONY : src/SerialController_sub.o
 
-# target to build an object file
-src/SerialController_sub.cpp.o:
-	$(MAKE) -f CMakeFiles/SerialController.dir/build.make CMakeFiles/SerialController.dir/src/SerialController_sub.cpp.o
-.PHONY : src/SerialController_sub.cpp.o
-
-src/SerialController_sub.i: src/SerialController_sub.cpp.i
+# target to preprocess a source file
+src/SerialController_sub.i:
+	$(MAKE) -f CMakeFiles/SerialController.dir/build.make CMakeFiles/SerialController.dir/src/SerialController_sub.i
 .PHONY : src/SerialController_sub.i
 
-# target to preprocess a source file
-src/SerialController_sub.cpp.i:
-	$(MAKE) -f CMakeFiles/SerialController.dir/build.make CMakeFiles/SerialController.dir/src/SerialController_sub.cpp.i
-.PHONY : src/SerialController_sub.cpp.i
-
-src/SerialController_sub.s: src/SerialController_sub.cpp.s
+# target to generate assembly for a file
+src/SerialController_sub.s:
+	$(MAKE) -f CMakeFiles/SerialController.dir/build.make CMakeFiles/SerialController.dir/src/SerialController_sub.s
 .PHONY : src/SerialController_sub.s
 
-# target to generate assembly for a file
-src/SerialController_sub.cpp.s:
-	$(MAKE) -f CMakeFiles/SerialController.dir/build.make CMakeFiles/SerialController.dir/src/SerialController_sub.cpp.s
-.PHONY : src/SerialController_sub.cpp.s
-
-src/SpiderMovementController_pubsub.o: src/SpiderMovementController_pubsub.cpp.o
+# target to build an object file
+src/SpiderMovementController_pubsub.o:
+	$(MAKE) -f CMakeFiles/SpiderMovementController_pubsub.dir/build.make CMakeFiles/SpiderMovementController_pubsub.dir/src/SpiderMovementController_pubsub.o
 .PHONY : src/SpiderMovementController_pubsub.o
 
-# target to build an object file
-src/SpiderMovementController_pubsub.cpp.o:
-	$(MAKE) -f CMakeFiles/SpiderMovementController_pubsub.dir/build.make CMakeFiles/SpiderMovementController_pubsub.dir/src/SpiderMovementController_pubsub.cpp.o
-.PHONY : src/SpiderMovementController_pubsub.cpp.o
-
-src/SpiderMovementController_pubsub.i: src/SpiderMovementController_pubsub.cpp.i
+# target to preprocess a source file
+src/SpiderMovementController_pubsub.i:
+	$(MAKE) -f CMakeFiles/SpiderMovementController_pubsub.dir/build.make CMakeFiles/SpiderMovementController_pubsub.dir/src/SpiderMovementController_pubsub.i
 .PHONY : src/SpiderMovementController_pubsub.i
 
-# target to preprocess a source file
-src/SpiderMovementController_pubsub.cpp.i:
-	$(MAKE) -f CMakeFiles/SpiderMovementController_pubsub.dir/build.make CMakeFiles/SpiderMovementController_pubsub.dir/src/SpiderMovementController_pubsub.cpp.i
-.PHONY : src/SpiderMovementController_pubsub.cpp.i
-
-src/SpiderMovementController_pubsub.s: src/SpiderMovementController_pubsub.cpp.s
+# target to generate assembly for a file
+src/SpiderMovementController_pubsub.s:
+	$(MAKE) -f CMakeFiles/SpiderMovementController_pubsub.dir/build.make CMakeFiles/SpiderMovementController_pubsub.dir/src/SpiderMovementController_pubsub.s
 .PHONY : src/SpiderMovementController_pubsub.s
 
-# target to generate assembly for a file
-src/SpiderMovementController_pubsub.cpp.s:
-	$(MAKE) -f CMakeFiles/SpiderMovementController_pubsub.dir/build.make CMakeFiles/SpiderMovementController_pubsub.dir/src/SpiderMovementController_pubsub.cpp.s
-.PHONY : src/SpiderMovementController_pubsub.cpp.s
-
-src/SpiderRobotMain_pubsub.o: src/SpiderRobotMain_pubsub.cpp.o
+# target to build an object file
+src/SpiderRobotMain_pubsub.o:
+	$(MAKE) -f CMakeFiles/SpiderRobotMain.dir/build.make CMakeFiles/SpiderRobotMain.dir/src/SpiderRobotMain_pubsub.o
 .PHONY : src/SpiderRobotMain_pubsub.o
 
-# target to build an object file
-src/SpiderRobotMain_pubsub.cpp.o:
-	$(MAKE) -f CMakeFiles/SpiderRobotMain.dir/build.make CMakeFiles/SpiderRobotMain.dir/src/SpiderRobotMain_pubsub.cpp.o
-.PHONY : src/SpiderRobotMain_pubsub.cpp.o
-
-src/SpiderRobotMain_pubsub.i: src/SpiderRobotMain_pubsub.cpp.i
+# target to preprocess a source file
+src/SpiderRobotMain_pubsub.i:
+	$(MAKE) -f CMakeFiles/SpiderRobotMain.dir/build.make CMakeFiles/SpiderRobotMain.dir/src/SpiderRobotMain_pubsub.i
 .PHONY : src/SpiderRobotMain_pubsub.i
 
-# target to preprocess a source file
-src/SpiderRobotMain_pubsub.cpp.i:
-	$(MAKE) -f CMakeFiles/SpiderRobotMain.dir/build.make CMakeFiles/SpiderRobotMain.dir/src/SpiderRobotMain_pubsub.cpp.i
-.PHONY : src/SpiderRobotMain_pubsub.cpp.i
-
-src/SpiderRobotMain_pubsub.s: src/SpiderRobotMain_pubsub.cpp.s
-.PHONY : src/SpiderRobotMain_pubsub.s
-
 # target to generate assembly for a file
-src/SpiderRobotMain_pubsub.cpp.s:
-	$(MAKE) -f CMakeFiles/SpiderRobotMain.dir/build.make CMakeFiles/SpiderRobotMain.dir/src/SpiderRobotMain_pubsub.cpp.s
-.PHONY : src/SpiderRobotMain_pubsub.cpp.s
+src/SpiderRobotMain_pubsub.s:
+	$(MAKE) -f CMakeFiles/SpiderRobotMain.dir/build.make CMakeFiles/SpiderRobotMain.dir/src/SpiderRobotMain_pubsub.s
+.PHONY : src/SpiderRobotMain_pubsub.s
 
 # Help Target
 help:
@@ -517,34 +407,27 @@ help:
 	@echo "... clean"
 	@echo "... depend"
 	@echo "... ROSBUILD_genmsg_cpp"
+	@echo "... ROSBUILD_genmsg_lisp"
 	@echo "... ROSBUILD_genmsg_py"
 	@echo "... ROSBUILD_gensrv_cpp"
+	@echo "... ROSBUILD_gensrv_lisp"
 	@echo "... SerialController"
 	@echo "... SpiderMovementController_pubsub"
 	@echo "... SpiderRobotMain"
-	@echo "... clean_test_results"
-	@echo "... doxygen"
+	@echo "... clean-test-results"
 	@echo "... edit_cache"
-	@echo "... install"
-	@echo "... install/local"
-	@echo "... install/strip"
-	@echo "... list_install_components"
 	@echo "... rebuild_cache"
-	@echo "... rosbuild_clean-test-results"
 	@echo "... rosbuild_precompile"
 	@echo "... rosbuild_premsgsrvgen"
 	@echo "... rospack_genmsg"
 	@echo "... rospack_genmsg_all"
 	@echo "... rospack_genmsg_libexe"
 	@echo "... rospack_gensrv"
-	@echo "... run_tests"
 	@echo "... test"
 	@echo "... test-future"
 	@echo "... test-results"
 	@echo "... test-results-run"
 	@echo "... tests"
-	@echo "... gtest"
-	@echo "... gtest_main"
 	@echo "... src/SerialController_sub.o"
 	@echo "... src/SerialController_sub.i"
 	@echo "... src/SerialController_sub.s"
