@@ -115,17 +115,17 @@ int main(int argc, char **argv)
 	
 	/////////////
 	
-	float pos1[] = {0.2032, 0.2032, -.11}; 
-	float* pos2;
-	pos2 = TransferFrame(0,0, pos1);
-	
-	printf("\n\n %f %f %f \n\n", pos2[0], pos2[1], pos2[2] );
-	
-	int LegAngs[3] = {0};
-	InverseKinematics(pos2, LegAngs);
-	
-	
-	return 0;
+//	float pos1[] = {0.2032, 0.2032, -.11}; 
+//	float* pos2;
+//	pos2 = TransferFrame(0,0, pos1);
+//	
+//	printf("\n\n %f %f %f \n\n", pos2[0], pos2[1], pos2[2] );
+//	
+//	int LegAngs[3] = {0};
+//	InverseKinematics(pos2, LegAngs);
+//	
+//	
+//	return 0;
 	/////////////
 	
 	while(ros::ok() && !SHUTDOWN)
