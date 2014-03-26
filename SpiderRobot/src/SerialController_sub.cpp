@@ -138,25 +138,25 @@ int main(int argc, char** argv)
 		buffer[0] ='Q';								// Query command
 		buffer[1] = 13;								// acsii carrier return for end of command
 		int result = write(serialPort, buffer, 2);			// send to ssc-32
-		printf("bits sent: %d\n", result);					// print bits sent 
+		//~ printf("bits sent: %d\n", result);					// print bits sent 
 		memset(buffer,0,sizeof(buffer));					// clear buffer
 
 		n = read(serialPort, buffer, sizeof(buffer));			// attempt to read bytes from the port
 		if(n > 0)									// if reponse print any received bytes to terminal
 		{
-			ROS_INFO("\nRECEIVED TTY RESPONSE...");
+			//~ ROS_INFO("\nRECEIVED TTY RESPONSE...");
 			for(i=0; i<n; i++)
 			{
-				printf("%c", buffer[i]);
+				//~ printf("%c", buffer[i]);
 			}
-			printf(" \n\n");
+			//~ printf(" \n\n");
 
 			MotorResponse.data = buffer[0];
 			LegStatus_pub.publish(MotorResponse);
 		}
 		else
 		{
-			printf("No response to query");
+			//~ printf("No response to query");
 		}
 
 
@@ -175,15 +175,15 @@ void motionCommandCallback(const SpiderRobot::MyArray::ConstPtr& msg)
 	 {											// command case 0: send command to servos, most common case
 		char buffer[300], temp[10] = {'\0'};				// buffer for serial commands, and temp buffer
 		int i, n, pos[18], uSecPos[18], result;				// counter i, size n, position commands in degree, position commands in usec, result from sending serial data
-		printf("\nRecived data for all channels...\n");
-		for(i=0 ; i<18; i++)							// get position values
+		//~ printf("\nRecived data for all channels...\n");
+		for(i=0 ; i<18; i++)								// get position values
 		{
 			pos[i] = msg->data[i];
 		}
 
 		for(i=0 ; i<18; i++)
 		{
-			uSecPos[i] = 11*pos[i] + 1500;				// convert to useconds of duty cycle
+			uSecPos[i] = (int)(11.3333* ((float)pos[i]) + 1500);	// convert to useconds of duty cycle
 		}
 
 		CheckPos(0, uSecPos, NULL, NULL);					// check to make sure desired position is in range of possible position, mode 0 for all channels
@@ -192,7 +192,7 @@ void motionCommandCallback(const SpiderRobot::MyArray::ConstPtr& msg)
 		strcat(buffer, temp);
 		for(i=1 ; i<18; i++)
 		{
-			if(i < 9)								// motor number, channel offset
+			if(i < 9)										// motor number, channel offset
 			{
 				sprintf(temp, "#%dP%d", i, uSecPos[i]);		// convert to string for the rest of the motors (i) with command uSecPos
 			}
@@ -218,14 +218,14 @@ void motionCommandCallback(const SpiderRobot::MyArray::ConstPtr& msg)
 	    strcat(buffer, temp);
 
 	    n = strlen(buffer);
-	    printf("size: %d\n", n);
-	    for(i = 0 ; i < n ; i++)							// print full command for checking
-		printf("%c", buffer[i]);
-	    printf("\n");
+	    //~ printf("size: %d\n", n);
+	    //~ for(i = 0 ; i < n ; i++)							// print full command for checking
+		//~ printf("%c", buffer[i]);
+	    //~ printf("\n");
 
 	    buffer[n] = 13;								// ascii carrier return, used for end bit. Should also remove null
 	    result = write(serialPort, buffer, n+1);				// send to ssc-32
-	    printf("bits sent: %d\n", result);					// print bits sent
+	    //~ printf("bits sent: %d\n", result);					// print bits sent
 
 	    break;
 	}
@@ -246,9 +246,9 @@ void SingleCommandCallback(const SpiderRobot::My2Num::ConstPtr& msg)
 
 	char buffer[20] = {'\0'}, temp[10] = {'\0'};				// buffer for serial commands, and temp buffer
 	int i, n, uSecPos, result;
-	printf("\nRecived single channel data...\n");
+	//~ printf("\nRecived single channel data...\n");
 
-	uSecPos = 11*msg->pos + 1500;							// convert to useconds of duty cycle
+	uSecPos = (int)(11.3333* ((float)msg->pos) + 1500);	// convert to useconds of duty cycle
 	CheckPos(1, NULL, msg->cha, &uSecPos);					// check to make sure desired position is in range of possible position, mode 1 for only 1 channel
 
 	sprintf(temp, "#%dP%d",msg->cha, uSecPos);				// convert to string for first motor (0)
@@ -257,14 +257,14 @@ void SingleCommandCallback(const SpiderRobot::My2Num::ConstPtr& msg)
 	strcat(buffer, "S250");								// set slow speed
 
 	n = strlen(buffer);
-	printf("size: %d\n", n);
-	for(i = 0 ; i < n ; i++)							// print full command for checking
-	printf("%c", buffer[i]);
-	printf("\n");
+	//~ printf("size: %d\n", n);
+	//~ for(i = 0 ; i < n ; i++)							// print full command for checking
+	//~ printf("%c", buffer[i]);
+	//~ printf("\n");
 
 	buffer[n] = 13;									// ascii carrier return, used for end bit. Should also remove null
 	result = write(serialPort, buffer, n+1);					// send to ssc-32
-	printf("bits sent: %d\n", result);						// print bits sent
+	//~ printf("bits sent: %d\n", result);						// print bits sent
 
 
 
