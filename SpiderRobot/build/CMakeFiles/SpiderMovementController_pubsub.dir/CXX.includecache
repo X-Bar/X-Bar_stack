@@ -6,6 +6,20 @@
 
 #IncludeRegexTransform: 
 
+../include/SpiderRobot/AnglesToJoints.h
+ros/ros.h
+../include/SpiderRobot/ros/ros.h
+SpiderRobot/MyArray.h
+-
+
+../include/SpiderRobot/InverseK.h
+math.h
+-
+
+../include/SpiderRobot/SpiderConstants.h
+
+../include/SpiderRobot/TransferFrame.h
+
 ../msg_gen/cpp/include/SpiderRobot/MyArray.h
 string
 -
@@ -39,6 +53,16 @@ geometry_msgs/Twist.h
 /home/cody/groovy_workspace/GitHubRepos/X-Bar_stack/SpiderRobot/src/geometry_msgs/Twist.h
 SpiderRobot/MyArray.h
 -
+signal.h
+-
+SpiderRobot/InverseK.h
+/home/cody/groovy_workspace/GitHubRepos/X-Bar_stack/SpiderRobot/src/SpiderRobot/InverseK.h
+SpiderRobot/TransferFrame.h
+/home/cody/groovy_workspace/GitHubRepos/X-Bar_stack/SpiderRobot/src/SpiderRobot/TransferFrame.h
+SpiderRobot/SpiderConstants.h
+/home/cody/groovy_workspace/GitHubRepos/X-Bar_stack/SpiderRobot/src/SpiderRobot/SpiderConstants.h
+SpiderRobot/AnglesToJoints.h
+/home/cody/groovy_workspace/GitHubRepos/X-Bar_stack/SpiderRobot/src/SpiderRobot/AnglesToJoints.h
 
 /opt/ros/groovy/include/XmlRpcDecl.h
 ros/macros.h

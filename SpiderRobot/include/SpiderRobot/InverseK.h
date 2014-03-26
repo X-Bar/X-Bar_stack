@@ -1,4 +1,5 @@
 #include <math.h>
+#include "SpiderRobot/SpiderConstants.h"
 
 
 /***********************************************************************************************************************
@@ -54,7 +55,7 @@ short int InverseKinematics(float BasePoints[3], int LegAng[3])
 		return 1;
 	}
 	// angle offsets from home between matlab and physial robot ( 90 deg)
-	printf("theta2: %f\n", theta2);
+	//~ printf("theta2: %f\n", theta2);
 	
 	// L(1).angdes =  -(  atan2(Goal.y(2),Goal.x(2)) - atan2(L(2).leng*sin(L(2).angdes), L(1).leng + L(2).leng*cos(L(2).angdes))  )
 	theta1 =  atan2(BasePoints[2], Ax) -  atan2(L2*sin(theta2), L1 + L2*cos(theta2));
@@ -76,7 +77,7 @@ short int InverseKinematics(float BasePoints[3], int LegAng[3])
 	LegAng[0] = (int)(theta0*180.0/PI);
 	LegAng[1] = (int)(theta1*180.0/PI);
 	LegAng[2] = (int)(theta2*180.0/PI);
-	printf("Leg angles (deg): %d, %d, %d\n", LegAng[0], LegAng[1], LegAng[2]);
+	printf("IK. Leg angles (deg): %d, %d, %d\n", LegAng[0], LegAng[1], LegAng[2]);
 	
 	return 0;
 }

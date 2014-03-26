@@ -3,6 +3,7 @@
 
 CMakeFiles/SpiderRobotMain.dir/src/SpiderRobotMain_pubsub.cpp.o: ../include/SpiderRobot/AnglesToJoints.h
 CMakeFiles/SpiderRobotMain.dir/src/SpiderRobotMain_pubsub.cpp.o: ../include/SpiderRobot/InverseK.h
+CMakeFiles/SpiderRobotMain.dir/src/SpiderRobotMain_pubsub.cpp.o: ../include/SpiderRobot/SpiderConstants.h
 CMakeFiles/SpiderRobotMain.dir/src/SpiderRobotMain_pubsub.cpp.o: ../include/SpiderRobot/TransferFrame.h
 CMakeFiles/SpiderRobotMain.dir/src/SpiderRobotMain_pubsub.cpp.o: ../msg_gen/cpp/include/SpiderRobot/MyArray.h
 CMakeFiles/SpiderRobotMain.dir/src/SpiderRobotMain_pubsub.cpp.o: ../src/SpiderRobotMain_pubsub.cpp

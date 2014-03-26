@@ -52,10 +52,12 @@ Leg Three: channels 6, 7, 8
 #include <unistd.h>
 #include <math.h>
 
-#include "SpiderRobot/TransferFrame.h"
-#include "SpiderRobot/InverseK.h"
-#include "SpiderRobot/AnglesToJoints.h"
 #include <SpiderRobot/MyArray.h>
+
+#include "SpiderRobot/AnglesToJoints.h"
+#include "SpiderRobot/InverseK.h"
+#include "SpiderRobot/TransferFrame.h"
+#include "SpiderRobot/SpiderConstants.h"
 
 SpiderRobot::MyArray Angles2Joints(short int group, int Joints[3], SpiderRobot::MyArray PosArray);
 void LegStatusCallback(const std_msgs::Char::ConstPtr& msg);
@@ -65,11 +67,12 @@ float* TransferFrame(short int Mode,short int Leg, float BasePoints[]);
 void MultiplyMat(float A[4][4], float B[4][1], float C[4][1]);//,int N, int L, int M);
 short int InverseKinematics(float BasePoints[3], int LegAng[3]);
 
+using namespace SpiderRobotConstants;							// stores leg common leg positions
 
 bool SHUTDOWN = false;											// flag to shutdown while loop
 SpiderRobot::MyArray PosArray;									// ROS message to publish
 bool CurrentlyMoving = true;									// flag of whether serial controller returns that its currenly moving
-int STATE = 0;
+int STATE = 0;													// for state machine
 
 
 int main(int argc, char **argv)
@@ -85,6 +88,8 @@ int main(int argc, char **argv)
 
 	int i = 0;													// counter
 	short int MySpeed = 300;									// speed for joints to move
+	float* pos;													// temp for holding calculated positions
+	int LegAngs[3] = {0};										// temp for holding leg angles
 	
 	int* LegArray;
 	PosArray.command = 0;										// command number. 0 is move all legs
@@ -92,38 +97,6 @@ int main(int argc, char **argv)
 	PosArray.size = 18;											// size of data array
 	ros::Rate loop_rate(.2);									// while loop rate
 	
-	// number of general positions, old version. Angle coordinates, leg space 
-	//  side/leg/joint  CurrentlyMoving   L/1/1      L/1/3   L/2/2      L/3/1     L/3/3     R/1/2     R/2/1     R/2/3     R/3/2                      
-	//  side/leg/joint          L/1/2     L/2/1     L/2/3     L/3/2     R/1/1     R/1/3     R/2/2     R/3/1    R/3/3                     
-	//  channel      Lside	 	0    1    2    3    4    5    6    7     8  RS9  10   11   12    13  14    15  16    17
-	int AllLegsUpUp_Ang_Leg[] = {0,  63,  -80,  0,  63,  -80,  0,  63,  -80,  0,  63,  -80,  0,  63,  -80,  0,  63,  -80};
-	int AllLegsHome_Ang_Leg[] = {0,   0,    0,  0,   0,    0,  0,   0,    0,  0,   0,    0,  0,   0,    0,  0,   0,    0};
-	int LegG0Down_Ang_Leg[] = 	{0, -22,  -15,  0,   0,    0,  0, -22,  -15,  0,   0,    0,  0, -22,  -15,  0,   0,    0};
-	int LegG0Up_Ang_Leg[] = 	{0,  27,   25,  0,   0,    0,  0,  27,   25,  0,   0,    0,  0,  27,   25,  0,   0,    0};
-	int LegG1Down_Ang_Leg[] = 	{0,   0,    0,  0, -22,  -15,  0,   0,    0,  0, -22,  -15,  0,   0,    0,  0, -22,  -15};
-	int LegG1Up_Ang_Leg[] = 	{0,   0,    0,  0,  27,   27,  0,   0,    0,  0,  27,   25,  0,   0,    0,  0,  27,   25};
-
-	// number of general positions, new version. Use with function Angles to Joints
-	// Angle coordinates, leg space
-	//						J0  J1  J2
-	int LegUpUp_Ang_Leg[] =	{0, 63, -80};						// position for leg group all straight up
-	int LegHome_Ang_Leg[] =	{0, 0, 0};							// leg all at zero
-	int LegDown_Ang_Leg[] =	{0, -30, -35};						// legs in a standing down position
-	int LegUp_Ang_Leg[] =	{0, 27, 25};						// legs in a lefted position
-	
-	// General positions. Cartesian coordinates, leg space 
-	//							X			Y 	Z
-	float LegHome_Car_Leg[] = {.09525, .00, -.127};
-	float LegUpOut_Car_Leg[] =   {.15, .00, -.08};
-	float LegUpIn_Car_Leg[] =   {.10, .00, -.10};
-	float LegUpup_Car_Leg[] = {.10, .00, .06};
-	float LegDownOut_Car_Leg[] = {.15, .00, -.12};
-	float LegDownIn_Car_Leg[] = {.10, .00, -.15};
-	
-
-	
-	
-
 	printf("Starting system loop..\n");
 	STATE = 0; 													// set state to start
 	
@@ -135,37 +108,37 @@ int main(int argc, char **argv)
 	//~ 
 	//~ printf("\n\n pos: %f %f %f \n\n", pos2[0], pos2[1], pos2[2] );
 	//~ 
-	int LegAngs[3] = {0};
-	InverseKinematics(LegUpup_Car_Leg, LegAngs);
-	
-	PosArray = Angles2Joints(2, LegAngs, PosArray);
-	SpiderRobotMain_pub.publish(PosArray);				// publish command
-	usleep(1*1000*1000);
-	SpiderRobotMain_pub.publish(PosArray);		
-	usleep(3*1000*1000);
-	
-	////////////
-	InverseKinematics(LegUp_Car_Leg, LegAngs);
-	PosArray = Angles2Joints(2, LegAngs, PosArray);
-	SpiderRobotMain_pub.publish(PosArray);				// publish command
-	usleep(3*1000*1000);
-	
-	InverseKinematics(LegDown_Car_Leg, LegAngs);
-	PosArray = Angles2Joints(2, LegAngs, PosArray);
-	SpiderRobotMain_pub.publish(PosArray);				// publish command
-	usleep(3*1000*1000);
-	
-	InverseKinematics(LegUp_Car_Leg, LegAngs);
-	PosArray = Angles2Joints(2, LegAngs, PosArray);
-	SpiderRobotMain_pub.publish(PosArray);				// publish command
-	usleep(3*1000*1000);
-
-	InverseKinematics(LegDown_Car_Leg, LegAngs);
-	PosArray = Angles2Joints(2, LegAngs, PosArray);
-	SpiderRobotMain_pub.publish(PosArray);				// publish command
-	usleep(3*1000*1000);
-	
-	return 0;
+	//~ int LegAngs[3] = {0};
+	//~ InverseKinematics(LegUpup_Car_Leg, LegAngs);
+	//~ 
+	//~ PosArray = Angles2Joints(2, LegAngs, PosArray);
+	//~ SpiderRobotMain_pub.publish(PosArray);				// publish command
+	//~ usleep(1*1000*1000);
+	//~ SpiderRobotMain_pub.publish(PosArray);		
+	//~ usleep(3*1000*1000);
+	//~ 
+	//~ ////////////
+	//~ InverseKinematics(LegUpOut_Car_Leg, LegAngs);
+	//~ PosArray = Angles2Joints(2, LegAngs, PosArray);
+	//~ SpiderRobotMain_pub.publish(PosArray);				// publish command
+	//~ usleep(3*1000*1000);
+	//~ 
+	//~ InverseKinematics(LegDownOut_Car_Leg, LegAngs);
+	//~ PosArray = Angles2Joints(2, LegAngs, PosArray);
+	//~ SpiderRobotMain_pub.publish(PosArray);				// publish command
+	//~ usleep(3*1000*1000);
+	//~ 
+	//~ InverseKinematics(LegUpOut_Car_Leg, LegAngs);
+	//~ PosArray = Angles2Joints(2, LegAngs, PosArray);
+	//~ SpiderRobotMain_pub.publish(PosArray);				// publish command
+	//~ usleep(3*1000*1000);
+	//~ 
+	//~ InverseKinematics(LegDownOut_Car_Leg, LegAngs);
+	//~ PosArray = Angles2Joints(2, LegAngs, PosArray);
+	//~ SpiderRobotMain_pub.publish(PosArray);				// publish command
+	//~ usleep(3*1000*1000);
+	//~ 
+	//~ return 0;
 	/////////////
 	
 	while(ros::ok() && !SHUTDOWN)
@@ -174,18 +147,21 @@ int main(int argc, char **argv)
 		{
 		  case 0: // start 
 		  {
+			//~ InverseKinematics(LegUpup_Car_Leg, LegAngs);		// find joint angles from general leg position
 			PosArray = Angles2Joints(2, LegUpUp_Ang_Leg, PosArray);	// move all leg groups
+			PosArray.speed = 100;										// do first move slowly
 			SpiderRobotMain_pub.publish(PosArray);				// publish command
 			usleep(1*1000*1000);
 			SpiderRobotMain_pub.publish(PosArray);				// publish first command twice
 			CurrentlyMoving = true;								// change status to moving as command was given
-			usleep(1*1000*1000);
 			STATE = 1;
+			PosArray.speed = 300;
 			break;
 	  	  }
 		  case 1:
 		  {
-			PosArray = Angles2Joints(2, LegUp_Ang_Leg, PosArray);// move all leg groups
+			InverseKinematics(LegUpOut_Car_Leg, LegAngs);		// find joint angles from general leg position
+			PosArray = Angles2Joints(2, LegAngs, PosArray);		// move all leg groups
 			SpiderRobotMain_pub.publish(PosArray);				// publish command
 			CurrentlyMoving = true;
 			STATE = 2;
@@ -193,7 +169,8 @@ int main(int argc, char **argv)
 		  }
 		  case 2:
 		  {
-			PosArray = Angles2Joints(2, LegDown_Ang_Leg, PosArray);	// move all leg groups
+			InverseKinematics(LegDownOut_Car_Leg, LegAngs);		// find joint angles from general leg position
+			PosArray = Angles2Joints(2, LegAngs, PosArray);		// move all leg groups
 			SpiderRobotMain_pub.publish(PosArray);				// publish command
 			CurrentlyMoving = true;
 			STATE = 3;
@@ -201,7 +178,8 @@ int main(int argc, char **argv)
 		  }
 		  case 3:
 		  {
-			PosArray = Angles2Joints(1, LegUp_Ang_Leg, PosArray);// move all leg groups
+			InverseKinematics(LegUpIn_Car_Leg, LegAngs);		// find joint angles from general leg position
+			PosArray = Angles2Joints(1, LegAngs, PosArray);		// move leg group 1
 			SpiderRobotMain_pub.publish(PosArray);				// publish command
 			CurrentlyMoving = true;
 			STATE = 4;
@@ -209,7 +187,8 @@ int main(int argc, char **argv)
 		  }
 		  case 4:
 		  {
-			PosArray = Angles2Joints(2, LegDown_Ang_Leg, PosArray);	// move all leg groups
+			InverseKinematics(LegDownIn_Car_Leg, LegAngs);		// find joint angles from general leg position
+			PosArray = Angles2Joints(1, LegAngs, PosArray);		// move leg group 1
 			SpiderRobotMain_pub.publish(PosArray);				// publish command
 			CurrentlyMoving = true;
 			STATE = 5;
@@ -217,10 +196,20 @@ int main(int argc, char **argv)
 		  }
 		  case 5:
 		  {
-			PosArray = Angles2Joints(0, LegUp_Ang_Leg, PosArray);// move all leg groups
+			InverseKinematics(LegUpIn_Car_Leg, LegAngs);		// find joint angles from general leg position
+			PosArray = Angles2Joints(0, LegAngs, PosArray);		// move leg group 0
 			SpiderRobotMain_pub.publish(PosArray);				// publish command
 			CurrentlyMoving = true;
-			STATE = 2;
+			STATE = 6;
+			break;
+		  }
+		  case 6:
+		  {
+			InverseKinematics(LegDownIn_Car_Leg, LegAngs);		// find joint angles from general leg position
+			PosArray = Angles2Joints(0, LegAngs, PosArray);		// move leg group 0
+			SpiderRobotMain_pub.publish(PosArray);				// publish command
+			CurrentlyMoving = true;
+			STATE = 3;
 			break;
 		  }
 		  default:
@@ -235,7 +224,7 @@ int main(int argc, char **argv)
 		ros::spinOnce();
 		ros::spinOnce();
 		WaitForDone();											// wait for completetion
-	}// end while loop
+	}// end while(ros::ok() && !SHUTDOWN)
 
 
 
@@ -247,15 +236,18 @@ int main(int argc, char **argv)
 void shutdownHandler(int s)
 {
 	ROS_INFO("SHUTDOWN COMMAND DETECTED...\n");
-	printf("SHUTDOWN COMMAND DET	ECTED...\n");
+	printf("SHUTDOWN COMMAND DETECTED...\n");
 	SHUTDOWN = true;
 }
 
-
-
+/***********************************************************************************************************************
+void LegStatusCallback(const std_msgs::Char::ConstPtr& msg)
+* callback that recieves leg status and set globle bool variable 
+* CurrentlyMoving so that other functions know
+***********************************************************************************************************************/
 void LegStatusCallback(const std_msgs::Char::ConstPtr& msg)
 {
-	printf("Leg Status feedback: %c\n", msg->data);
+	//~ printf("Leg Status feedback: %c\n", msg->data);
 	switch(msg->data)
 	{
 	  case '.': // Not moving
@@ -272,8 +264,9 @@ void LegStatusCallback(const std_msgs::Char::ConstPtr& msg)
 }// end LegStatusCallback()
 
 /***********************************************************************************************************************
-int WaitForDone(void)
-
+short int WaitForDone(void)
+* forces code wait till function LegStatusCallback() declares robot
+* is ready to move
 ***********************************************************************************************************************/
 short int WaitForDone(void)
 {

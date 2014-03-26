@@ -16,6 +16,8 @@ SpiderRobot/MyArray.h
 math.h
 -
 
+../include/SpiderRobot/SpiderConstants.h
+
 ../include/SpiderRobot/TransferFrame.h
 
 ../msg_gen/cpp/include/SpiderRobot/MyArray.h
@@ -63,14 +65,16 @@ unistd.h
 -
 math.h
 -
-SpiderRobot/TransferFrame.h
-/home/cody/groovy_workspace/GitHubRepos/X-Bar_stack/SpiderRobot/src/SpiderRobot/TransferFrame.h
-SpiderRobot/InverseK.h
-/home/cody/groovy_workspace/GitHubRepos/X-Bar_stack/SpiderRobot/src/SpiderRobot/InverseK.h
-SpiderRobot/AnglesToJoints.h
-/home/cody/groovy_workspace/GitHubRepos/X-Bar_stack/SpiderRobot/src/SpiderRobot/AnglesToJoints.h
 SpiderRobot/MyArray.h
 -
+SpiderRobot/AnglesToJoints.h
+/home/cody/groovy_workspace/GitHubRepos/X-Bar_stack/SpiderRobot/src/SpiderRobot/AnglesToJoints.h
+SpiderRobot/InverseK.h
+/home/cody/groovy_workspace/GitHubRepos/X-Bar_stack/SpiderRobot/src/SpiderRobot/InverseK.h
+SpiderRobot/TransferFrame.h
+/home/cody/groovy_workspace/GitHubRepos/X-Bar_stack/SpiderRobot/src/SpiderRobot/TransferFrame.h
+SpiderRobot/SpiderConstants.h
+/home/cody/groovy_workspace/GitHubRepos/X-Bar_stack/SpiderRobot/src/SpiderRobot/SpiderConstants.h
 
 /opt/ros/groovy/include/XmlRpcDecl.h
 ros/macros.h
