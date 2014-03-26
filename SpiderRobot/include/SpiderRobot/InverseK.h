@@ -8,8 +8,13 @@ Takes array of leg end effector position in leg frame, transfers it into jointsp
 * output float LegAng[3]
 * returns int = 0 if successful
 ***********************************************************************************************************************/
+
+
+
 short int InverseKinematics(float BasePoints[3], int LegAng[3])
 {
+	using namespace SpiderRobotConstants;
+	
 	// inverse k should be leg independent and not need modes
 	// based on law of cosines
 	// need to find theta0, theta1, and theta2
@@ -17,10 +22,7 @@ short int InverseKinematics(float BasePoints[3], int LegAng[3])
 	float D1;											// for inverse k
 	float Ax;											// x and z points in xz plane
 	float temp;											// holder
-	float PI = 3.1416;
-	float L0 = .0381;									// link 0 length
-	float L1 = .05715;									// link 1 length
-	float L2 = .127;									// link 2 length
+	
 	// stage 1, find theta 0
 	theta0 = atan2(BasePoints[1], BasePoints[0]);
 	

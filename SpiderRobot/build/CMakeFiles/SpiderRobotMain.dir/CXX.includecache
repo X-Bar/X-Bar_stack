@@ -15,6 +15,8 @@ SpiderRobot/MyArray.h
 ../include/SpiderRobot/InverseK.h
 math.h
 -
+SpiderRobot/SpiderConstants.h
+../include/SpiderRobot/SpiderRobot/SpiderConstants.h
 
 ../include/SpiderRobot/SpiderConstants.h
 
