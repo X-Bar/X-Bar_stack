@@ -1,0 +1,14 @@
+<package>
+  <description brief="CodyLegoBot_pkg">
+
+     CodyLegoBot
+
+  </description>
+  <author>Cody</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/CodyLegoBot</url>
+  <depend package="roscpp"/>
+</package>
+
+
