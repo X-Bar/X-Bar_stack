@@ -38,7 +38,7 @@ float H_B_G1L2[4][4] =
 /***********************************************************************************************************************
 float* TransferFrame(short int Mode,short int Leg, float BasePoints[])
 3 modes
-Mode 0, single leg: Takes array of leg end effector position in base frame, transfers it into leg frame (local) and returns
+Mode 0, single leg: Takes array of leg end effector position in base frame (robot), transfers it into leg frame (local) and returns
 * input (short int Mode = 0, short int Leg, float BasePoints[Bx, By, Bz])
 * * need leg number and position
 * output float LocPoints[3]
@@ -52,14 +52,14 @@ Mode 2, Leg group 1: Takes array of 3 leg end effector positions in base frame, 
 * output float LocPoints[9]
 ***********************************************************************************************************************/
 // returns LocPoints[]
-float* TransferFrame(short int Mode,short int Leg, float BasePoints[])
+float* TransferFrame(short int Mode,short int Leg, float BasePoints[3])
 {
 	switch (Mode)
 	{
 	  case 0: // single leg transfer
 	  {
 		// float LocPoints[Lx, Ly, Lz] TransferFrame(short int Mode = 0, short int Leg, float BasePoints[Bx, By, Bz])
-		float HPointB[4][1];							// homogeneous representation global point
+		float HPointB[4][1];							// homogeneous representation global point, colume verctor
 		//float PointL[3x];								// local point
 		HPointB[0][0] = BasePoints[0];
 		HPointB[1][0] = BasePoints[1];

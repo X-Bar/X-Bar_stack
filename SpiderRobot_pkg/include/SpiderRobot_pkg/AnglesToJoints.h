@@ -1,7 +1,6 @@
 #include "ros/ros.h"
 #include <SpiderRobot_pkg/MyArray.h>
 
-
 /***********************************************************************************************************************
 void Angles2Joints(short int group, int Joints[3])
 Takes array of desired leg joints and places them in PosArray.data for publishing
@@ -10,7 +9,7 @@ Takes array of desired leg joints and places them in PosArray.data for publishin
 * * group 1: places angles for leg group 1
 * * group 2: places angles for leg group 0 and 1
 ***********************************************************************************************************************/
-SpiderRobot_pkg::MyArray Angles2Joints(short int group, int Joints[3], SpiderRobot_pkg::MyArray PosArray)
+SpiderRobot_pkg::MyArray Angles2Joints(short int group, int Joints[], SpiderRobot_pkg::MyArray PosArray)
 {
 	switch(group)
 	{

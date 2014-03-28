@@ -28,6 +28,7 @@ REVISION HISTORY:
 #include "SpiderRobot_pkg/AnglesToJoints.h"
 
 SpiderRobot_pkg::MyArray Angles2Joints(short int group, int Joints[3], SpiderRobot_pkg::MyArray PosArray);
+float* TransferFrame(short int Mode,short int Leg, float BasePoints[3]);
 void LegStatusCallback(const std_msgs::Char::ConstPtr& msg);
 void RobotTwistCallback(const geometry_msgs::Twist::ConstPtr& msg);
 void LegStatusCallback(const std_msgs::Char::ConstPtr& msg);
@@ -44,10 +45,22 @@ short int LegGroupTurn = 0;											// leg group 0 or 1's turn to move
 float Zposition = 0;													// will eventually modify standing height
 float Xstride = 0;														// walking stride in X, Y, Z, and rotation theta
 float Ystride = 0;														
-float Zstride = 0;														// amount legs left up while walking
+float Zstride = .02;													// amount legs left up while walking, default 2cm
 float Tstride = 0;														
 int TwistFactor = 1000*1000;											// convert between raw twist and meter
 
+float FPG0L0[3];														// holds foot plant points in 
+float FPG0L1[3];														
+float FPG0L2[3];														// cartesian coordinates
+float FPG1L0[3];
+float FPG1L1[3];
+float FPG1L2[3];
+//~ float *FPG0L0;														// holds foot plant points in 
+//~ float *FPG0L1;														
+//~ float *FPG0L2;														// cartesian coordinates
+//~ float *FPG1L0;
+//~ float *FPG1L1;
+//~ float *FPG1L2;
 
 int main(int argc, char **argv)
 {
@@ -59,8 +72,7 @@ int main(int argc, char **argv)
 	ros::Publisher SpiderRobotMain_pub = nh.advertise<SpiderRobot_pkg::MyArray>("MyArray", 100);
 	// make subscribing object for feedback
 	ros::Subscriber LegStatus_sub = nh.subscribe("LegStatus", 1, LegStatusCallback);
-	// make subscribing object for movement commands
-	ros::Subscriber RobotTwist_sub = nh.subscribe("RobotTwist", 1, RobotTwistCallback);
+	
 	
 	int LegAngs[3] = {0};												// temp for holding leg angles
 	
@@ -153,6 +165,8 @@ int main(int argc, char **argv)
 	}// while(ros::ok() && !SHUTDOWN)
 	
 	usleep(1000*1000);
+	// make subscribing object for movement commands
+	ros::Subscriber RobotTwist_sub = nh.subscribe("RobotTwist", 1, RobotTwistCallback);
 	ros::spin();														// wait for callbacks, they do all the work
 	
 	return 0;
@@ -179,6 +193,44 @@ void RobotTwistCallback(const geometry_msgs::Twist::ConstPtr& twist)
 	{
 		Tstride = twist->angular.x/TwistFactor;
 	}
+	
+	printf("LegGroupTurn: %d\n", LegGroupTurn);
+	if(xyMove)															// of the move is good
+	{
+		if(LegGroupTurn) //move group 1
+		{
+			FPG1L0[0] = G1L0_Home_Car_Rob[0] + Xstride;					// move group 1 up and forward
+			//~ FPG1L0[1] = G1L0_Home_Car_Rob[1] + Ystride;				// group 0, leg 0
+			//~ FPG1L0[2] = G1L0_Home_Car_Rob[2] + Zstride;				// move up (default 2 cm)
+			TransferFrame(LegGroupTurn+1, 0, FPG1L0);
+			printf("FPG1L0: %f, %f, $f\n", G1L0_Home_Car_Rob[0], G1L0_Home_Car_Rob[1], G1L0_Home_Car_Rob[2]);
+			//~ 
+			//~ FPG0L0[0] = G1L0_Home_Car_Rob[0] - Xstride;				// move group 0 back
+			//~ FPG0L0[1] = G1L0_Home_Car_Rob[1] - Ystride;				// group 1, leg 0
+			//~ FPG0L0[2] = G0L0_Home_Car_Rob[2];
+			
+			LegGroupTurn = 0;
+		}
+		else //move group 0
+		{
+			// move group 1 up and forward
+			//~ FPG0L0[0] = G0L0_Home_Car_Rob[0] + Xstride;					// move group 0 up and forward
+			//~ FPG0L0[1] = G0L0_Home_Car_Rob[1] + Ystride;					// group 0, leg 0
+			//~ FPG0L0[2] = G0L0_Home_Car_Rob[2] + Zstride;					// move up (default 2 cm)
+			//~ 
+			//~ FPG1L0[0] = G1L0_Home_Car_Rob[0] - Xstride;					// move group 1 bac
+			//~ FPG1L0[1] = G1L0_Home_Car_Rob[1] - Ystride;					// group 1, leg 0
+			//~ FPG1L0[2] = G0L0_Home_Car_Rob[2];
+			
+			
+			LegGroupTurn = 1;
+		}
+	}
+	else
+	{
+		//turn move
+	}
+	
 	
 	
 	

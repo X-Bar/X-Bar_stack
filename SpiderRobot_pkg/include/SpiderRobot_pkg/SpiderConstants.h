@@ -39,12 +39,12 @@ namespace SpiderRobotConstants
 	
 	// Home positions. Cartesian coordinates, robot frame 
 	//							X		Y	 	Z
-	float H_G0L0_Home_Car_Rob[4][1] = {{ .2011},{ .1161},{ -.1524},{ 1}};
-	float H_G0L1_Home_Car_Rob[4][1] = {{ .0   },{-.23215},{ -.1524},{ 1}};
-	float H_G0L2_Home_Car_Rob[4][1] = {{-.2011},{ .1161},{ -.1524},{ 1}};
-	float H_G1L0_Home_Car_Rob[4][1] = {{ .2011},{-.1161},{ -.1524},{ 1}};
-	float H_G1L1_Home_Car_Rob[4][1] = {{ .0   },{ .23215},{ -.1524},{ 1}};
-	float H_G1L2_Home_Car_Rob[4][1] = {{-.2011},{-.1161},{ -.1524},{ 1}};
+	float G0L0_Home_Car_Rob[3] = { .2011, .1161, -.1524};
+	float G0L1_Home_Car_Rob[3] = { .0   ,-.23215, -.1524};
+	float G0L2_Home_Car_Rob[3] = {-.2011, .1161, -.1524};
+	float G1L0_Home_Car_Rob[3] = { .2011,-.1161, -.1524};
+	float G1L1_Home_Car_Rob[3] = { .0   , .23215, -.1524};
+	float G1L2_Home_Car_Rob[3] = {-.2011,-.1161, -.1524};
 	
 }
 #endif
