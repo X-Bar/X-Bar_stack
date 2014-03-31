@@ -52,7 +52,7 @@ Mode 2, Leg group 1: Takes array of 3 leg end effector positions in base frame, 
 * output float LocPoints[9]
 ***********************************************************************************************************************/
 // returns LocPoints[]
-float* TransferFrame(short int Mode,short int Leg, float BasePoints[3])
+float* TransferFrame(short int Mode,short int Leg, float BasePoints[])
 {
 	switch (Mode)
 	{

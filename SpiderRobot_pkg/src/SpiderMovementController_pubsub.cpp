@@ -15,20 +15,20 @@ REVISION HISTORY:
 **********************************************************************************************************************/
 
 #include <stdio.h>
+#include <signal.h>														// for ctrl c exit
 #include "ros/ros.h"
 #include "std_msgs/Char.h"
 #include "geometry_msgs/Twist.h"
-#include <SpiderRobot_pkg/MyArray.h>										// to publish joint angles
+#include <SpiderRobot_pkg/MyArray.h>									// to publish joint angles
+#include "ros/callback_queue.h"											// for custom callbacks
+#include <boost/thread.hpp>
 
-#include <signal.h>
-
-#include "SpiderRobot_pkg/InverseK.h"
-#include "SpiderRobot_pkg/TransferFrame.h"
 #include "SpiderRobot_pkg/SpiderConstants.h"
-#include "SpiderRobot_pkg/AnglesToJoints.h"
+#include "SpiderRobot_pkg/SpiderFunctions.h"
 
+void callbackThread(void);
 SpiderRobot_pkg::MyArray Angles2Joints(short int group, int Joints[3], SpiderRobot_pkg::MyArray PosArray);
-float* TransferFrame(short int Mode,short int Leg, float BasePoints[3]);
+float* TransferFrame(short int Mode,short int Leg, float BasePoints[]);
 void LegStatusCallback(const std_msgs::Char::ConstPtr& msg);
 void RobotTwistCallback(const geometry_msgs::Twist::ConstPtr& msg);
 void LegStatusCallback(const std_msgs::Char::ConstPtr& msg);
@@ -36,6 +36,8 @@ void shutdownHandler(int s);
 short int WaitForDone(void);
 
 using namespace SpiderRobotConstants;									// stores leg common leg positions
+
+ros::CallbackQueue g_queue;												// custom queue for leg status feedback
 
 bool CurrentlyMoving = true;											// flag of whether serial controller returns that its currenly moving
 int STATE = 0;															// for state machine
@@ -45,16 +47,31 @@ short int LegGroupTurn = 0;											// leg group 0 or 1's turn to move
 float Zposition = 0;													// will eventually modify standing height
 float Xstride = 0;														// walking stride in X, Y, Z, and rotation theta
 float Ystride = 0;														
-float Zstride = .02;													// amount legs left up while walking, default 2cm
+float Zstride = .01;													// amount legs left up while walking, default 1cm
 float Tstride = 0;														
-int TwistFactor = 1000*1000;											// convert between raw twist and meter
+float TwistFactor = 1000*1000;											// convert between raw twist and meter
 
-float FPG0L0[3];														// holds foot plant points in 
-float FPG0L1[3];														
-float FPG0L2[3];														// cartesian coordinates
-float FPG1L0[3];
-float FPG1L1[3];
-float FPG1L2[3];
+float FPG0L0_C[3];														// holds foot plant points in 
+float FPG0L1_C[3];														
+float FPG0L2_C[3];														// cartesian coordinates
+float FPG1L0_C[3];
+float FPG1L1_C[3];
+float FPG1L2_C[3];
+int FPG0L0_A[3];														// holds foot plant points in 
+int FPG0L1_A[3];														
+int FPG0L2_A[3];														// angle coordinates
+int FPG1L0_A[3];
+int FPG1L1_A[3];
+int FPG1L2_A[3];
+//~ int *FPG0L0_A;														// holds foot plant points in 
+//~ int *FPG0L1_A;														
+//~ int *FPG0L2_A;														// angle coordinates
+//~ int *FPG1L0_A;
+//~ int *FPG1L1_A;
+//~ int *FPG1L2_A;
+
+
+
 //~ float *FPG0L0;														// holds foot plant points in 
 //~ float *FPG0L1;														
 //~ float *FPG0L2;														// cartesian coordinates
@@ -62,21 +79,35 @@ float FPG1L2[3];
 //~ float *FPG1L1;
 //~ float *FPG1L2;
 
+// make publishing object and advertise. make globe so callback can publish
+ros::Publisher SpiderRobotMain_pub;// = nh.advertise<SpiderRobot_pkg::MyArray>("MyArray", 100);
+
 int main(int argc, char **argv)
 {
-	printf("Starting SpiderMovementController_pubsub \n");
+	ROS_INFO("Starting SpiderMovementController_pubsub \n");
 	
-	ros::init(argc, argv, "SpiderMovementController");					// start ROS connection
+	ros::init(argc, argv, "MovementController");						// start ROS connection
 	ros::NodeHandle nh;													// make node handle
-	// make publishing object and advertise
-	ros::Publisher SpiderRobotMain_pub = nh.advertise<SpiderRobot_pkg::MyArray>("MyArray", 100);
-	// make subscribing object for feedback
-	ros::Subscriber LegStatus_sub = nh.subscribe("LegStatus", 1, LegStatusCallback);
 	
+	// make publishing object and advertise
+	SpiderRobotMain_pub = nh.advertise<SpiderRobot_pkg::MyArray>("MyArray", 100);
+	
+	// make subscribing object for feedback
+	//~ ros::Subscriber LegStatus_sub = nh.subscribe("LegStatus", 1, LegStatusCallback);
+	//~ ros::SubscribeOptions ops = ros::SubscribeOptions::create<std_msgs::String>("chatter", 1000,
+																				//~ chatterCallbackCustomQueue,
+																				//~ ros::VoidPtr(), &g_queue);
+	ros::SubscribeOptions ops = ros::SubscribeOptions::create<std_msgs::Char>("LegStatus", 1,
+																				LegStatusCallback,
+																				ros::VoidPtr(), &g_queue);
+	ros::Subscriber LegStatus_sub = nh.subscribe(ops);
+	//~ ros::Subscriber RobotTwist_sub = nh.subscribe("RobotTwist", 1, RobotTwistCallback); // moved to after while(ros::ok() && !SHUTDOWN)
+	boost::thread LegStatus_thread(callbackThread);
+	ROS_INFO_STREAM("Main thread id=" << boost::this_thread::get_id());
 	
 	int LegAngs[3] = {0};												// temp for holding leg angles
 	
-	// Start up and stand
+	//// Start up and stand ////
 	while(ros::ok() && !SHUTDOWN)
 	{
 		switch(STATE)
@@ -159,17 +190,31 @@ int main(int argc, char **argv)
 		  }
 		}// end switch(STATE)
 		usleep(1000*1000);
-		ros::spinOnce();
-		ros::spinOnce();
 		WaitForDone();
-	}// while(ros::ok() && !SHUTDOWN)
+	}// while(ros::ok() && !SHUTDOWN) for startup and stand
 	
 	usleep(1000*1000);
 	// make subscribing object for movement commands
 	ros::Subscriber RobotTwist_sub = nh.subscribe("RobotTwist", 1, RobotTwistCallback);
+	
 	ros::spin();														// wait for callbacks, they do all the work
+	LegStatus_thread.join();
 	
 	return 0;
+}
+
+/***********************************************************************************************************************
+//The custom queue used for one of the subscription callbacks
+***********************************************************************************************************************/
+void callbackThread()
+{
+  ROS_INFO_STREAM("Callback thread id=" << boost::this_thread::get_id());
+
+  ros::NodeHandle n;
+  while (n.ok())
+  {
+    g_queue.callAvailable(ros::WallDuration(0.01));
+  }
 }
 
 void RobotTwistCallback(const geometry_msgs::Twist::ConstPtr& twist)
@@ -197,48 +242,126 @@ void RobotTwistCallback(const geometry_msgs::Twist::ConstPtr& twist)
 	printf("LegGroupTurn: %d\n", LegGroupTurn);
 	if(xyMove)															// of the move is good
 	{
+		short int res;													// holds results of function calls, pass/fail
 		if(LegGroupTurn) //move group 1
 		{
-			FPG1L0[0] = G1L0_Home_Car_Rob[0] + Xstride;					// move group 1 up and forward
-			//~ FPG1L0[1] = G1L0_Home_Car_Rob[1] + Ystride;				// group 0, leg 0
-			//~ FPG1L0[2] = G1L0_Home_Car_Rob[2] + Zstride;				// move up (default 2 cm)
-			TransferFrame(LegGroupTurn+1, 0, FPG1L0);
-			printf("FPG1L0: %f, %f, $f\n", G1L0_Home_Car_Rob[0], G1L0_Home_Car_Rob[1], G1L0_Home_Car_Rob[2]);
-			//~ 
-			//~ FPG0L0[0] = G1L0_Home_Car_Rob[0] - Xstride;				// move group 0 back
-			//~ FPG0L0[1] = G1L0_Home_Car_Rob[1] - Ystride;				// group 1, leg 0
-			//~ FPG0L0[2] = G0L0_Home_Car_Rob[2];
-			
+			// move group 1 up and forward
+			FPG1L0_C[0] = G1L0_Home_Car_Rob[0] + Xstride;				// move group 1 up and forward
+			FPG1L0_C[1] = G1L0_Home_Car_Rob[1] + Ystride;				// group 0, leg 0
+			FPG1L0_C[2] = G1L0_Home_Car_Rob[2] + Zstride;				// move up (default 1 cm)
+			printf("FPG1L0_C: %f, %f, %f\n", FPG1L0_C[0], FPG1L0_C[1], FPG1L0_C[2]);
+			TransferFrame(0, 3, FPG1L0_C);								// move points from robot frame to leg frame 0
+			printf("FPG1L0_C: %f, %f, %f\n", FPG1L0_C[0], FPG1L0_C[1], FPG1L0_C[2]);
+			res = InverseKinematics(FPG1L0_C, FPG1L0_A);				// find IK, need to check res more inthe future
+			if(~res)
+			{
+				PosArray.data[3] = FPG1L0_A[0];
+				PosArray.data[4] = FPG1L0_A[1];
+				PosArray.data[5] = FPG1L0_A[2];
+			}
+			WaitForDone();												// wait for legs to reach position
+			CurrentlyMoving = true;
+			SpiderRobotMain_pub.publish(PosArray);						// publish command to lift legs up
 			LegGroupTurn = 0;
-		}
+			
+			// move group 0 back
+			FPG0L0_C[0] = G0L0_Home_Car_Rob[0] - Xstride;				// move group 0 back
+			FPG0L0_C[1] = G0L0_Home_Car_Rob[1] - Ystride;				// group 1, leg 0
+			FPG0L0_C[2] = G0L0_Home_Car_Rob[2];
+			printf("FPG0L0_C: %f, %f, %f\n", FPG0L0_C[0], FPG0L0_C[1], FPG0L0_C[2]);
+			TransferFrame( 0, 0, FPG0L0_C);								// move points from robot frame to leg frame 0
+			printf("FPG0L0_C: %f, %f, %f\n", FPG0L0_C[0], FPG0L0_C[1], FPG0L0_C[2]);
+			res = InverseKinematics(FPG0L0_C, FPG0L0_A);				// find IK, need to check res more inthe future
+			if(~res)	
+			{
+				PosArray.data[3] = FPG1L0_A[0];
+				PosArray.data[4] = FPG1L0_A[1];
+				PosArray.data[5] = FPG1L0_A[2];
+			}
+			SpiderRobotMain_pub.publish(PosArray);						// publish command to lift legs up
+			LegGroupTurn = 1;
+			WaitForDone();												// wait for legs up and back
+			CurrentlyMoving = true;
+			
+			// move group 1 down
+			FPG1L0_C[0] = G1L0_Home_Car_Rob[0] + Xstride;				// move group 1 down
+			FPG1L0_C[1] = G1L0_Home_Car_Rob[1] + Ystride;				// group 0, leg 0
+			FPG1L0_C[2] = G1L0_Home_Car_Rob[2];							// move back down
+			printf("FPG1L0_C: %f, %f, %f\n", FPG1L0_C[0], FPG1L0_C[1], FPG1L0_C[2]);
+			TransferFrame( 0, 3, FPG1L0_C);								// move points from robot frame to leg frame 0
+			printf("FPG1L0_C: %f, %f, %f\n", FPG1L0_C[0], FPG1L0_C[1], FPG1L0_C[2]);
+			res = InverseKinematics(FPG1L0_C, FPG1L0_A);				// find IK, need to check res more inthe future
+			if(~res)
+			{
+				PosArray.data[3] = FPG1L0_A[0];
+				PosArray.data[4] = FPG1L0_A[1];
+				PosArray.data[5] = FPG1L0_A[2];
+			}
+			SpiderRobotMain_pub.publish(PosArray);						// publish command to lift legs up
+			LegGroupTurn = 0;
+		}// end if(LegGroupTurn) //move group 1
 		else //move group 0
 		{
 			// move group 1 up and forward
-			//~ FPG0L0[0] = G0L0_Home_Car_Rob[0] + Xstride;					// move group 0 up and forward
-			//~ FPG0L0[1] = G0L0_Home_Car_Rob[1] + Ystride;					// group 0, leg 0
-			//~ FPG0L0[2] = G0L0_Home_Car_Rob[2] + Zstride;					// move up (default 2 cm)
-			//~ 
-			//~ FPG1L0[0] = G1L0_Home_Car_Rob[0] - Xstride;					// move group 1 bac
-			//~ FPG1L0[1] = G1L0_Home_Car_Rob[1] - Ystride;					// group 1, leg 0
-			//~ FPG1L0[2] = G0L0_Home_Car_Rob[2];
-			
-			
+			FPG0L0_C[0] = G0L0_Home_Car_Rob[0] + Xstride;				// move group 0 up and forward
+			FPG0L0_C[1] = G0L0_Home_Car_Rob[1] + Ystride;				// group 0, leg 0
+			FPG0L0_C[2] = G0L0_Home_Car_Rob[2] + Zstride;				// move up (default 1 cm)
+			printf("FPG0L0_C: %f, %f, %f\n", FPG0L0_C[0], FPG0L0_C[1], FPG0L0_C[2]);
+			TransferFrame( 0, 0, FPG0L0_C);								// move points from robot frame to leg frame 0
+			printf("FPG0L0_C: %f, %f, %f\n", FPG0L0_C[0], FPG0L0_C[1], FPG0L0_C[2]);
+			res = InverseKinematics(FPG0L0_C, FPG0L0_A);				// find IK, need to check res more inthe future
+			if(~res)	
+			{
+				PosArray.data[3] = FPG1L0_A[0];
+				PosArray.data[4] = FPG1L0_A[1];
+				PosArray.data[5] = FPG1L0_A[2];
+			}
+			SpiderRobotMain_pub.publish(PosArray);						// publish command to lift legs up
 			LegGroupTurn = 1;
-		}
-	}
-	else
+			
+			
+			FPG1L0_C[0] = G1L0_Home_Car_Rob[0] - Xstride;				// move group 1 bac
+			FPG1L0_C[1] = G1L0_Home_Car_Rob[1] - Ystride;				// group 1, leg 0
+			FPG1L0_C[2] = G0L0_Home_Car_Rob[2];
+			printf("FPG1L0_C: %f, %f, %f\n", FPG1L0_C[0], FPG1L0_C[1], FPG1L0_C[2]);
+			TransferFrame( 0, 3, FPG1L0_C);								// move points from robot frame to leg frame 0
+			printf("FPG1L0_C: %f, %f, %f\n", FPG1L0_C[0], FPG1L0_C[1], FPG1L0_C[2]);
+			res = InverseKinematics(FPG1L0_C, FPG1L0_A);				// find IK, need to check res more inthe future
+			if(~res)
+			{
+				PosArray.data[3] = FPG1L0_A[0];
+				PosArray.data[4] = FPG1L0_A[1];
+				PosArray.data[5] = FPG1L0_A[2];
+			}
+			SpiderRobotMain_pub.publish(PosArray);						// publish command to lift legs up
+			WaitForDone();												// wait for legs up and back
+			CurrentlyMoving = true;
+			
+			// move group 0 down
+			FPG0L0_C[0] = G0L0_Home_Car_Rob[0] + Xstride;				// move group 1 down
+			FPG0L0_C[1] = G0L0_Home_Car_Rob[1] + Ystride;				// group 0, leg 0
+			FPG0L0_C[2] = G0L0_Home_Car_Rob[2];							// move back down
+			printf("FPG0L0_C: %f, %f, %f\n", FPG0L0_C[0], FPG0L0_C[1], FPG0L0_C[2]);
+			TransferFrame( 0, 3, FPG1L0_C);								// move points from robot frame to leg frame 0
+			printf("FPG0L0_C: %f, %f, %f\n", FPG0L0_C[0], FPG0L0_C[1], FPG0L0_C[2]);
+			res = InverseKinematics(FPG0L0_C, FPG0L0_A);				// find IK, need to check res more inthe future
+			if(~res)
+			{
+				PosArray.data[3] = FPG1L0_A[0];
+				PosArray.data[4] = FPG1L0_A[1];
+				PosArray.data[5] = FPG1L0_A[2];
+			}
+			SpiderRobotMain_pub.publish(PosArray);						// publish command to lift legs up
+			LegGroupTurn = 0;
+		}// end else //move group 0
+			
+	}// end if(xyMove)	
+	else //turn move
 	{
 		//turn move
-	}
-	
-	
-	
-	
-	
-	// calculate movement
-	
-	
-	
+	}// end else (xyMove) //turn move
+	WaitForDone();														// wait for legs to reach position
+	CurrentlyMoving = true;
 }// end RobotTwistCallback
 
 /***********************************************************************************************************************

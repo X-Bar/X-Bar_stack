@@ -18,9 +18,11 @@ SpiderRobot_pkg::MyArray Angles2Joints(short int group, int Joints[], SpiderRobo
 		PosArray.data[0] = Joints[0];
 		PosArray.data[1] = Joints[1];
 		PosArray.data[2] = Joints[2];
+		
 		PosArray.data[6] = Joints[0];
 		PosArray.data[7] = Joints[1];
 		PosArray.data[8] = Joints[2];
+		
 		PosArray.data[12] = Joints[0];
 		PosArray.data[13] = Joints[1];
 		PosArray.data[14] = Joints[2];
@@ -31,9 +33,11 @@ SpiderRobot_pkg::MyArray Angles2Joints(short int group, int Joints[], SpiderRobo
 		PosArray.data[3] = Joints[0];
 		PosArray.data[4] = Joints[1];
 		PosArray.data[5] = Joints[2];
+		
 		PosArray.data[9] = Joints[0];
 		PosArray.data[10] = Joints[1];
 		PosArray.data[11] = Joints[2];
+		
 		PosArray.data[15] = Joints[0];
 		PosArray.data[16] = Joints[1];
 		PosArray.data[17] = Joints[2];

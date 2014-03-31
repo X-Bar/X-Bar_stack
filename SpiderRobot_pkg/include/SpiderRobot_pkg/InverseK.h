@@ -8,9 +8,6 @@ Takes array of leg end effector position in leg frame, transfers it into jointsp
 * output float LegAng[3]
 * returns int = 0 if successful
 ***********************************************************************************************************************/
-
-
-
 short int InverseKinematics(float BasePoints[3], int LegAng[3])
 {
 	using namespace SpiderRobotConstants;
