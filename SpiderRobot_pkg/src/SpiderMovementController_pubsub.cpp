@@ -38,6 +38,7 @@ short int WaitForDone(void);
 using namespace SpiderRobotConstants;									// stores leg common leg positions
 
 ros::CallbackQueue g_queue;												// custom queue for leg status feedback
+boost::thread RobotTwist_thread(callbackThread);
 
 bool CurrentlyMoving = true;											// flag of whether serial controller returns that its currenly moving
 int STATE = 0;															// for state machine
@@ -47,7 +48,7 @@ short int LegGroupTurn = 0;											// leg group 0 or 1's turn to move
 float Zposition = 0;													// will eventually modify standing height
 float Xstride = 0;														// walking stride in X, Y, Z, and rotation theta
 float Ystride = 0;														
-float Zstride = .01;													// amount legs left up while walking, default 1cm
+float Zstride = .00;													// amount legs left up while walking, default 1cm
 float Tstride = 0;														
 float TwistFactor = 1000*1000;											// convert between raw twist and meter
 
@@ -93,20 +94,13 @@ int main(int argc, char **argv)
 	SpiderRobotMain_pub = nh.advertise<SpiderRobot_pkg::MyArray>("MyArray", 100);
 	
 	// make subscribing object for feedback
-	//~ ros::Subscriber LegStatus_sub = nh.subscribe("LegStatus", 1, LegStatusCallback);
-	//~ ros::SubscribeOptions ops = ros::SubscribeOptions::create<std_msgs::String>("chatter", 1000,
-																				//~ chatterCallbackCustomQueue,
-																				//~ ros::VoidPtr(), &g_queue);
-	ros::SubscribeOptions ops = ros::SubscribeOptions::create<std_msgs::Char>("LegStatus", 1,
-																				LegStatusCallback,
-																				ros::VoidPtr(), &g_queue);
-	ros::Subscriber LegStatus_sub = nh.subscribe(ops);
+	ros::Subscriber LegStatus_sub = nh.subscribe("LegStatus", 1, LegStatusCallback);
 	//~ ros::Subscriber RobotTwist_sub = nh.subscribe("RobotTwist", 1, RobotTwistCallback); // moved to after while(ros::ok() && !SHUTDOWN)
-	boost::thread LegStatus_thread(callbackThread);
+	//~ boost::thread LegStatus_thread(callbackThread);
 	ROS_INFO_STREAM("Main thread id=" << boost::this_thread::get_id());
 	
 	int LegAngs[3] = {0};												// temp for holding leg angles
-	
+	ros::Rate loop_rate(10);
 	//// Start up and stand ////
 	while(ros::ok() && !SHUTDOWN)
 	{
@@ -130,6 +124,7 @@ int main(int argc, char **argv)
 		  {
 			InverseKinematics(LegUpOut_Car_Leg, LegAngs);				// find joint angles from general leg position
 			PosArray = Angles2Joints(2, LegAngs, PosArray);				// move all leg groups
+			WaitForDone();												// wait to be in position before moving again
 			SpiderRobotMain_pub.publish(PosArray);						// publish command
 			CurrentlyMoving = true;
 			STATE = 2;
@@ -139,6 +134,7 @@ int main(int argc, char **argv)
 		  {
 			InverseKinematics(LegDownOut_Car_Leg, LegAngs);				// find joint angles from general leg position
 			PosArray = Angles2Joints(2, LegAngs, PosArray);				// move all leg groups
+			WaitForDone();												// wait to be in position before moving again
 			SpiderRobotMain_pub.publish(PosArray);						// publish command
 			CurrentlyMoving = true;
 			STATE = 3;
@@ -148,6 +144,7 @@ int main(int argc, char **argv)
 		  {
 			InverseKinematics(LegUpIn_Car_Leg, LegAngs);				// find joint angles from general leg position
 			PosArray = Angles2Joints(1, LegAngs, PosArray);				//  move leg group 1
+			WaitForDone();												// wait to be in position before moving again
 			SpiderRobotMain_pub.publish(PosArray);						// publish command
 			CurrentlyMoving = true;
 			STATE = 4;
@@ -157,6 +154,7 @@ int main(int argc, char **argv)
 		  {
 			InverseKinematics(LegDownIn_Car_Leg, LegAngs);				// find joint angles from general leg position
 			PosArray = Angles2Joints(1, LegAngs, PosArray);				//  move leg group 1
+			WaitForDone();												// wait to be in position before moving agains
 			SpiderRobotMain_pub.publish(PosArray);						// publish command
 			CurrentlyMoving = true;
 			STATE = 5;
@@ -166,6 +164,7 @@ int main(int argc, char **argv)
 		  {
 			InverseKinematics(LegUpIn_Car_Leg, LegAngs);				// find joint angles from general leg position
 			PosArray = Angles2Joints(0, LegAngs, PosArray);				//  move leg group 0
+			WaitForDone();												// wait to be in position before moving again
 			SpiderRobotMain_pub.publish(PosArray);						// publish command
 			CurrentlyMoving = true;
 			STATE = 6;
@@ -175,6 +174,7 @@ int main(int argc, char **argv)
 		  {
 			InverseKinematics(LegDownIn_Car_Leg, LegAngs);				// find joint angles from general leg position
 			PosArray = Angles2Joints(0, LegAngs, PosArray);				//  move leg group 0
+			WaitForDone();												// wait to be in position before moving again
 			SpiderRobotMain_pub.publish(PosArray);						// publish command
 			CurrentlyMoving = true;
 			SHUTDOWN = true;											// stop while loop, startup is done, go to spin() now
@@ -189,16 +189,24 @@ int main(int argc, char **argv)
 			break; break;												// exit
 		  }
 		}// end switch(STATE)
-		usleep(1000*1000);
-		WaitForDone();
+		loop_rate.sleep();
 	}// while(ros::ok() && !SHUTDOWN) for startup and stand
+	SHUTDOWN = false;													// true was just to exit last switch, make false again
+	ROS_INFO("SpiderRobot standup complete");
 	
-	usleep(1000*1000);
 	// make subscribing object for movement commands
-	ros::Subscriber RobotTwist_sub = nh.subscribe("RobotTwist", 1, RobotTwistCallback);
+	//~ ros::Subscriber RobotTwist_sub = nh.subscribe("RobotTwist", 1, RobotTwistCallback);
+	//~ ros::SubscribeOptions ops = ros::SubscribeOptions::create<std_msgs::String>("chatter", 1000,
+																				//~ chatterCallbackCustomQueue,
+																				//~ ros::VoidPtr(), &g_queue);
+	ros::SubscribeOptions ops = ros::SubscribeOptions::create<geometry_msgs::Twist>("RobotTwist", 1,
+																				RobotTwistCallback,
+																				ros::VoidPtr(), &g_queue);
+	ros::Subscriber RobotTwist_sub = nh.subscribe(ops);
 	
-	ros::spin();														// wait for callbacks, they do all the work
-	LegStatus_thread.join();
+	
+	//~ ros::spin();														// wait for callbacks, they do all the work
+	RobotTwist_thread.join();
 	
 	return 0;
 }
@@ -227,6 +235,7 @@ void RobotTwistCallback(const geometry_msgs::Twist::ConstPtr& twist)
 	if(twist->linear.x > 1000)
 	{
 		Xstride = twist->linear.x/TwistFactor;
+		printf("Xstride: %f\n", Xstride);
 		xyMove = true;
 	}
 	if(twist->linear.y > 1000)
@@ -245,7 +254,7 @@ void RobotTwistCallback(const geometry_msgs::Twist::ConstPtr& twist)
 		short int res;													// holds results of function calls, pass/fail
 		if(LegGroupTurn) //move group 1
 		{
-			// move group 1 up and forward
+			//~ // move group 1 up and forward
 			FPG1L0_C[0] = G1L0_Home_Car_Rob[0] + Xstride;				// move group 1 up and forward
 			FPG1L0_C[1] = G1L0_Home_Car_Rob[1] + Ystride;				// group 0, leg 0
 			FPG1L0_C[2] = G1L0_Home_Car_Rob[2] + Zstride;				// move up (default 1 cm)
@@ -316,6 +325,7 @@ void RobotTwistCallback(const geometry_msgs::Twist::ConstPtr& twist)
 				PosArray.data[4] = FPG1L0_A[1];
 				PosArray.data[5] = FPG1L0_A[2];
 			}
+			WaitForDone();												// wait for legs to reach position
 			SpiderRobotMain_pub.publish(PosArray);						// publish command to lift legs up
 			LegGroupTurn = 1;
 			
@@ -336,6 +346,7 @@ void RobotTwistCallback(const geometry_msgs::Twist::ConstPtr& twist)
 			SpiderRobotMain_pub.publish(PosArray);						// publish command to lift legs up
 			WaitForDone();												// wait for legs up and back
 			CurrentlyMoving = true;
+			LegGroupTurn = 0;
 			
 			// move group 0 down
 			FPG0L0_C[0] = G0L0_Home_Car_Rob[0] + Xstride;				// move group 1 down
@@ -352,7 +363,7 @@ void RobotTwistCallback(const geometry_msgs::Twist::ConstPtr& twist)
 				PosArray.data[5] = FPG1L0_A[2];
 			}
 			SpiderRobotMain_pub.publish(PosArray);						// publish command to lift legs up
-			LegGroupTurn = 0;
+			LegGroupTurn = 1;
 		}// end else //move group 0
 			
 	}// end if(xyMove)	
@@ -372,14 +383,15 @@ void LegStatusCallback(const std_msgs::Char::ConstPtr& msg)
 void LegStatusCallback(const std_msgs::Char::ConstPtr& msg)
 {
 	//~ printf("Leg Status feedback: %c\n", msg->data);
+	printf("checking...\n");
 	switch(msg->data)
 	{
-	  case '.': // Not moving
+	  case '.': // Not moving 46
 	  {
 		CurrentlyMoving = false;
 		break;
 	  }
-	  case '+': // Moving
+	  case '+': // Moving 43
 	  {
 		CurrentlyMoving = true;
 		break;
@@ -397,9 +409,12 @@ short int WaitForDone(void)
 	//for(int i = 0; i < 1000; i++)
 	while(CurrentlyMoving && ros::ok() && !SHUTDOWN)
 	{
+		//~ printf("waiting... ");
 		ros::spinOnce();												// Check for leg status msg
+		//~ RobotTwist_thread.join();
 		usleep(100*1000);												// wait 10th of a second
 	}
+	//~ printf("\ndone\n ");
 	return 0;
 }// end WaitForDone()
 

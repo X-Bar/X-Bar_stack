@@ -85,18 +85,18 @@ int main(int argc, char** argv)
 	//~ portName = "/dev/hiddev0";
 
 	// attempt to open the serial port
-	serialPort = openSerialPort(portName);
-
-	// check to see if we connected successfully
-	if(serialPort == -1)
-	{
-		printf("unable to open serial port %s \n", portName);
-		return(0);
-	}
-	else
-	{
-		printf("serial port opened: %s \n", portName);
-	}
+	//~ serialPort = openSerialPort(portName);
+//~ 
+	//~ // check to see if we connected successfully
+	//~ if(serialPort == -1)
+	//~ {
+		//~ printf("unable to open serial port %s \n", portName);
+		//~ return(0);
+	//~ }
+	//~ else
+	//~ {
+		//~ printf("serial port opened: %s \n", portName);
+	//~ }
 
 	// set up the shutdown handler
 	struct sigaction sigIntHandler;
