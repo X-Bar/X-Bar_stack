@@ -43,6 +43,7 @@ boost::thread RobotTwist_thread(callbackThread);
 bool CurrentlyMoving = true;											// flag of whether serial controller returns that its currenly moving
 int STATE = 0;															// for state machine
 bool SHUTDOWN = false;													// flag to shutdown while loop
+short int LoopHz = 10;													// rate for loops
 SpiderRobot_pkg::MyArray PosArray;										// ROS message to publish
 short int LegGroupTurn = 0;											// leg group 0 or 1's turn to move
 float Zposition = 0;													// will eventually modify standing height
@@ -100,7 +101,7 @@ int main(int argc, char **argv)
 	ROS_INFO_STREAM("Main thread id=" << boost::this_thread::get_id());
 	
 	int LegAngs[3] = {0};												// temp for holding leg angles
-	ros::Rate loop_rate(10);
+	ros::Rate loop_rate(LoopHz);
 	//// Start up and stand ////
 	while(ros::ok() && !SHUTDOWN)
 	{
@@ -184,8 +185,7 @@ int main(int argc, char **argv)
 		  {
 			PosArray.command = 1;										// command 1 is exit for serial controller
 			SpiderRobotMain_pub.publish(PosArray);						// publish command
-			usleep(1000*1000);
-			SHUTDOWN = true;											// stop while loop
+			SHUTDOWN = true;											// use shutdown temp stop while loop
 			break; break;												// exit
 		  }
 		}// end switch(STATE)
@@ -202,11 +202,10 @@ int main(int argc, char **argv)
 	ros::SubscribeOptions ops = ros::SubscribeOptions::create<geometry_msgs::Twist>("RobotTwist", 1,
 																				RobotTwistCallback,
 																				ros::VoidPtr(), &g_queue);
-	ros::Subscriber RobotTwist_sub = nh.subscribe(ops);
+	ros::Subscriber RobotTwist_sub = nh.subscribe(ops);					// put RobotTwist in custom queue (new thread)
 	
-	
-	//~ ros::spin();														// wait for callbacks, they do all the work
-	RobotTwist_thread.join();
+	//~ ros::spin();													// dont use spin(), LegStatus will use spinOnce()
+	RobotTwist_thread.join();											// start second thread?
 	
 	return 0;
 }
@@ -219,9 +218,11 @@ void callbackThread()
   ROS_INFO_STREAM("Callback thread id=" << boost::this_thread::get_id());
 
   ros::NodeHandle n;
+  ros::Rate loop_rate(LoopHz);
   while (n.ok())
   {
     g_queue.callAvailable(ros::WallDuration(0.01));
+    loop_rate.sleep();
   }
 }
 
@@ -232,13 +233,13 @@ void RobotTwistCallback(const geometry_msgs::Twist::ConstPtr& twist)
 	usleep(1000*1000);
 	// check for minimal value
 	bool xyMove = false;												// checks for xy move to cancel theta move
-	if(twist->linear.x > 1000)
+	if( -1000 < twist->linear.x && twist->linear.x < 1000 )
 	{
 		Xstride = twist->linear.x/TwistFactor;
 		printf("Xstride: %f\n", Xstride);
 		xyMove = true;
 	}
-	if(twist->linear.y > 1000)
+	if(-1000 < twist->linear.y && twist->linear.y < 1000)
 	{
 		Ystride = twist->linear.y/TwistFactor;
 		xyMove = true;
@@ -249,7 +250,7 @@ void RobotTwistCallback(const geometry_msgs::Twist::ConstPtr& twist)
 	}
 	
 	printf("LegGroupTurn: %d\n", LegGroupTurn);
-	if(xyMove)															// of the move is good
+	if(xyMove)															// if the twist is good (out of dead zone)
 	{
 		short int res;													// holds results of function calls, pass/fail
 		if(LegGroupTurn) //move group 1
@@ -383,7 +384,7 @@ void LegStatusCallback(const std_msgs::Char::ConstPtr& msg)
 void LegStatusCallback(const std_msgs::Char::ConstPtr& msg)
 {
 	//~ printf("Leg Status feedback: %c\n", msg->data);
-	printf("checking...\n");
+	//~ printf("checking...\n");
 	switch(msg->data)
 	{
 	  case '.': // Not moving 46
@@ -423,4 +424,9 @@ void shutdownHandler(int s)
 	ROS_INFO("SHUTDOWN COMMAND DETECTED...\n");
 	printf("SHUTDOWN COMMAND DETECTED...\n");
 	SHUTDOWN = true;
+}
+
+short int StrideGroupMove(short int Group, float X, float Y, float Z)
+{
+	
 }
