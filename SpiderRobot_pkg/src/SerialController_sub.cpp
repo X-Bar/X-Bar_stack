@@ -6,7 +6,7 @@ DESCRIPTION:
 ROS interface node serial commands. Recieves topic, converts to serial commands and sends them. Currently in use with SSC-32 servo controller
 
 PUBLISHES:  NA
-SUBSCRIBES: "cmd_vel" geometry_msgs/TwistStamped, "autonomous_enabled" std_msgs/Bool
+SUBSCRIBES: 
 SERVICES:   NA
 
 REVISION HISTORY:
@@ -118,7 +118,7 @@ int main(int argc, char** argv)
 	ros::Publisher LegStatus_pub = nh.advertise<std_msgs::Char>("LegStatus", 1);
 
 	// set the loop rate to 20 Hz	
-	ros::Rate loop_rate(10);
+	ros::Rate loop_rate(50);
 
 	// start the subscriber
 	SpiderRobot_pkg::MyArray PosArray;

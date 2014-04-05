@@ -54,10 +54,11 @@ Leg Three: channels 6, 7, 8
 
 #include <SpiderRobot_pkg/MyArray.h>
 
-#include "SpiderRobot_pkg/AnglesToJoints.h"
-#include "SpiderRobot_pkg/InverseK.h"
-#include "SpiderRobot_pkg/TransferFrame.h"
+//~ #include "SpiderRobot_pkg/AnglesToJoints.h"
+//~ #include "SpiderRobot_pkg/InverseK.h"
+//~ #include "SpiderRobot_pkg/TransferFrame.h"
 #include "SpiderRobot_pkg/SpiderConstants.h"
+#include "SpiderRobot_pkg/SpiderFunctions.h"
 
 SpiderRobot_pkg::MyArray Angles2Joints(short int group, int Joints[3], SpiderRobot_pkg::MyArray PosArray);
 void LegStatusCallback(const std_msgs::Char::ConstPtr& msg);
